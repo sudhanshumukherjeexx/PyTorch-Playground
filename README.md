@@ -13,7 +13,7 @@ The goal of this repository is to provide a practical, beginner-to-advanced lear
 ---
 
 <details>
-  <summary>Click to expand for notebook details</summary>
+  <summary>Click to expand for Notebook 1 details</summary>
 
 This notebook introduces the foundational concepts of tensor operations in PyTorch. Tensors are the basic building blocks for deep learning models, and this notebook covers how to initialize, manipulate, and operate on tensors effectively.
 
