@@ -12,40 +12,46 @@ The goal of this repository is to provide a practical, beginner-to-advanced lear
 
 ---
 
-## 📘 Notebook 1: Exploring PyTorch Tensor Operations
+<details>
+  <summary>Click to expand for notebook details</summary>
 
 This notebook introduces the foundational concepts of tensor operations in PyTorch. Tensors are the basic building blocks for deep learning models, and this notebook covers how to initialize, manipulate, and operate on tensors effectively.
 
 ### Key Topics Covered:
 
-1. **Initializing Tensors**  
-   Learn how to create 1D, 2D, and 3D tensors, as well as how to initialize tensors with specific values or random values.
-   - **1D, 2D, and 3D tensor creation**
-   - **Randomly initialized tensors**
-   - **Tensors with specific data types and values**
+#### Initializing Tensors:
+Learn how to create 1D, 2D, and 3D tensors, as well as how to initialize tensors with specific values or random values.
 
-2. **Mathematical Operations**  
-   Perform element-wise operations, broadcasting, and basic mathematical functions on tensors.
-   - **Element-wise operations** (addition, subtraction, multiplication, and division)
-   - **Exponentiation and logarithms**
-   - **Summation, mean, min, and max operations**
-   - **Broadcasting in tensor operations**
+- 1D, 2D, and 3D tensor creation
+- Randomly initialized tensors
+- Tensors with specific data types and values
 
-3. **Matrix Operations**  
-   Explore essential matrix operations like addition, subtraction, multiplication (dot product), transposing, reshaping, and slicing.
-   - **Matrix addition, subtraction, and multiplication**
-   - **Matrix transpose and inverse**
-   - **Reshaping and slicing tensors**
-   - **Matrix determinant**
+#### Mathematical Operations:
+Perform element-wise operations, broadcasting, and basic mathematical functions on tensors.
 
-4. **Tensor Concatenation and Stacking**  
-   Combine tensors using concatenation and stacking operations for flexible data manipulation.
+- Element-wise operations (addition, subtraction, multiplication, and division)
+- Exponentiation and logarithms
+- Summation, mean, min, and max operations
+- Broadcasting in tensor operations
 
-5. **Conversion between PyTorch Tensors and NumPy Arrays**  
-   Seamlessly convert between PyTorch tensors and NumPy arrays for compatibility with the broader Python ecosystem.
+#### Matrix Operations:
+Explore essential matrix operations like addition, subtraction, multiplication (dot product), transposing, reshaping, and slicing.
 
-6. **Automatic Differentiation**  
-   A brief introduction to PyTorch's automatic differentiation functionality using `requires_grad` and `backward()`.
+- Matrix addition, subtraction, and multiplication
+- Matrix transpose and inverse
+- Reshaping and slicing tensors
+- Matrix determinant
+
+#### Tensor Concatenation and Stacking:
+Combine tensors using concatenation and stacking operations for flexible data manipulation.
+
+#### Conversion between PyTorch Tensors and NumPy Arrays:
+Seamlessly convert between PyTorch tensors and NumPy arrays for compatibility with the broader Python ecosystem.
+
+#### Automatic Differentiation:
+A brief introduction to PyTorch's automatic differentiation functionality using `requires_grad` and `backward()`.
+
+</details>
 
 ### 🧠 What You Will Learn:
 - Understand the core operations required for handling tensors in PyTorch.
