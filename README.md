@@ -7,7 +7,7 @@ Welcome to **PyTorch Playground**, a repository dedicated to showcasing a wide a
 The goal of this repository is to provide a practical, beginner-to-advanced learning experience in PyTorch. Through a series of notebooks, we will explore different facets of deep learning, tensor operations, and neural networks, all implemented in PyTorch.
 
 ### Featured Notebooks:
-- **Notebook 1: Exploring PyTorch Tensor Operations**  
+- **[Notebook 1: Exploring PyTorch Tensor Operations](https://colab.research.google.com/drive/1zxiKzcRWMQ2ukA50v6V9cPjrsHfSiuUn?usp=sharing)**  
 - [Future Notebooks] (coming soon)
 
 ---
