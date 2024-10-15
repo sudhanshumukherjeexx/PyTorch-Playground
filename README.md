@@ -7,7 +7,7 @@ Welcome to **PyTorch Playground**, a repository dedicated to showcasing a wide a
 The goal of this repository is to provide a practical, beginner-to-advanced learning experience in PyTorch. Through a series of notebooks, we will explore different facets of deep learning, tensor operations, and neural networks, all implemented in PyTorch.
 
 ### Featured Notebooks:
-- **[Notebook 1: Exploring PyTorch Tensor Operations](https://colab.research.google.com/drive/1zxiKzcRWMQ2ukA50v6V9cPjrsHfSiuUn?usp=sharing)**  
+- 🔗**[Notebook 1: Exploring PyTorch Tensor Operations](https://colab.research.google.com/drive/1zxiKzcRWMQ2ukA50v6V9cPjrsHfSiuUn?usp=sharing)**  
 - [Future Notebooks] (coming soon)
 
 ---
@@ -53,12 +53,12 @@ A brief introduction to PyTorch's automatic differentiation functionality using 
 
 </details>
 
-### 🧠 What You Will Learn:
+#### 🧠 What You Will Learn:
 - Understand the core operations required for handling tensors in PyTorch.
 - Build an intuition for tensor manipulation, which is essential for deep learning model development.
 - Learn efficient tensor operations for neural network training, including matrix operations and broadcasting.
 
-### 🚀 How to Run the Notebook:
+#### 🚀 How to Run the Notebook:
 
 1. Clone the repository:
    ```bash
@@ -72,11 +72,9 @@ A brief introduction to PyTorch's automatic differentiation functionality using 
 
 3. Run the notebook in Google Colab or any local environment with PyTorch installed.
 
-### 🔗 [Click Here to View the Notebook](path_to_your_notebook)
-
 ---
 
-## Installation and Requirements
+#### Installation and Requirements
 
 This repository uses PyTorch. If you’re running it locally, make sure you have PyTorch installed:
 ```bash
@@ -86,7 +84,7 @@ pip install torch torchvision matplotlib numpy
 Alternatively, you can run the notebooks in [Google Colab](https://colab.research.google.com/), where no setup is required, as PyTorch comes pre-installed.
 
 ---
-## Future Plans
+#### Future Plans
 
 Stay tuned for more exciting notebooks on:
 - Neural Networks from Scratch in PyTorch
