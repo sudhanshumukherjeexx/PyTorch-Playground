@@ -106,7 +106,7 @@ Evaluate the trained model on test data and display the accuracy:
 - Visualizing predictions vs. actual results on sample images
 
 </details>
----
+
 #### 🚀 How to Run the Notebook:
 
 1. Clone the repository:
