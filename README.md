@@ -8,7 +8,8 @@ The goal of this repository is to provide a practical, beginner-to-advanced lear
 
 ### Featured Notebooks:
 - **[🔗 Notebook 1: Exploring PyTorch Tensor Operations](https://colab.research.google.com/drive/1zxiKzcRWMQ2ukA50v6V9cPjrsHfSiuUn?usp=sharing)**
-- **[🔗 Notebook 2: Building Neural Network from Scratch](https://colab.research.google.com/drive/1UeV8DGYC6vUjRXijdMWQt2z0SdgRx3v0?usp=sharing)**  
+- **[🔗 Notebook 2: Building Neural Network from Scratch](https://colab.research.google.com/drive/1UeV8DGYC6vUjRXijdMWQt2z0SdgRx3v0?usp=sharing)**
+- **[🔗 Notebook 2: 3. PyTorch Autograd, Gradient Tracking and Fine-Tuning.ipynb](https://colab.research.google.com/drive/1URGFgc-1KgwRacI-BspVKDdpur06wuvI?usp=sharing)**  
 - [Future Notebooks] (coming soon)
 
 ---
@@ -104,6 +105,48 @@ After training, visualize the error loss per epoch to understand the model’s l
 Evaluate the trained model on test data and display the accuracy:
 - Compute the accuracy of the model
 - Visualizing predictions vs. actual results on sample images
+
+</details>
+<details>
+  <summary>Notebook 3: PyTorch Autograd, Gradient Tracking, and Fine-Tuning</summary>
+
+This notebook provides a beginner-friendly exploration of PyTorch’s automatic differentiation tool, **Autograd**, and its use in gradient tracking, backpropagation, and fine-tuning models. It includes simplified explanations and examples to help new learners understand key PyTorch functionalities. It is inspired by [PyTorch’s Autograd Tutorial](https://pytorch.org/tutorials/beginner/blitz/autograd_tutorial.html).
+
+### Key Topics Covered:
+
+#### Understanding Autograd and Gradient Tracking:
+Learn how PyTorch’s `autograd` works by automatically calculating gradients, which are essential for backpropagation during neural network training.
+
+- Introduction to the `requires_grad` attribute
+- How autograd tracks operations on tensors
+- Gradient calculation with `.backward()`
+  
+#### Forward and Backward Propagation:
+Explore how forward propagation produces predictions and how backpropagation calculates gradients for updating model parameters.
+
+- Forward propagation through a neural network
+- Backward propagation to update model weights
+- Gradient storage in `.grad` attributes
+
+#### Freezing and Fine-Tuning Model Layers:
+Understand how to freeze layers during fine-tuning and update only the required parameters, like the classifier layers in pre-trained models such as ResNet18.
+
+- Freezing parameters using `requires_grad=False`
+- Fine-tuning ResNet by replacing the classifier layer
+- Gradients for fine-tuned layers only
+
+#### Using `torch.no_grad()` for Inference:
+Learn how to prevent gradient tracking during inference to improve performance.
+
+- Context management with `torch.no_grad()`
+- Preventing gradient computation during model evaluation
+
+#### Implementing Gradient Descent with Optimizers:
+Understand how to use optimizers like SGD to update model parameters based on gradients.
+
+- Loading and using optimizers (SGD example)
+- Calling `.step()` to perform gradient descent
+- Updating only unfrozen parameters during fine-tuning
 
 </details>
 
