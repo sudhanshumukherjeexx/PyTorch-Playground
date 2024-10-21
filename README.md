@@ -12,7 +12,7 @@ The goal of this repository is to provide a practical, beginner-to-advanced lear
 | Notebook 1: Exploring PyTorch Tensor Operations                        | Introduces foundational tensor operations in PyTorch, covering tensor initialization, manipulation, and basic math operations. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1zxiKzcRWMQ2ukA50v6V9cPjrsHfSiuUn?usp=sharing)                                          |
 | Notebook 2: Building Neural Network from Scratch                     | Walks through building a neural network from scratch in PyTorch, including forward and backward propagation. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1UeV8DGYC6vUjRXijdMWQt2z0SdgRx3v0?usp=sharing)                                          |
 | Notebook 3: PyTorch Autograd, Gradient Tracking and Fine-Tuning       | Explores PyTorch’s `autograd`, gradient tracking, and fine-tuning models with `torch.no_grad()`.            | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1URGFgc-1KgwRacI-BspVKDdpur06wuvI?usp=sharing)                                          |
-| Notebook-Implementation/Image Classification using CNN, ResNet(finetuning) and Simple FeedForward Network | Covers image classification using FeedForward networks, CNNs, and fine-tuning ResNet models.               | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](#)                                          |
+| Notebook-Implementation/1. Image Classification using CNN, ResNet(finetuning) and Simple FeedForward Network | Covers image classification using FeedForward networks, CNNs, and fine-tuning ResNet models.               | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/15nMqnx-wK-S52qAwVnN1k8ZQUM8HHZMS?usp=sharing)                                          |
 ---
 🧠 `Click to expland for details`
 <details>
@@ -148,7 +148,69 @@ Understand how to use optimizers like SGD to update model parameters based on gr
 - Loading and using optimizers (SGD example)
 - Calling `.step()` to perform gradient descent
 - Updating only unfrozen parameters during fine-tuning
+</details>
 
+<details>
+  <summary>Notebook-Implementation: Image Classification using CNN, ResNet(finetuning) and Simple FeedForward Network</summary>
+
+This notebook explores three different neural network architectures for image classification on the CIFAR-10 dataset: **Simple FeedForward Network**, **Convolutional Neural Network (CNN)**, and **ResNet** (using transfer learning). Each model is trained and evaluated on the same dataset, providing a comparison of their performance.
+
+### Key Topics Covered:
+
+#### 1. **Data Preprocessing and Augmentation:**
+- Load the CIFAR-10 dataset.
+- Normalize the dataset for optimal training performance.
+- Perform data augmentation to improve generalization.
+  - Random horizontal flips.
+  - Random cropping and rotation.
+  - Color jittering for better variance.
+
+#### 2. **Building the Models:**
+
+##### **2.1. Simple FeedForward Network:**
+- A basic fully connected neural network (MLP).
+- Input layer flattened from the image.
+- Two hidden layers with ReLU activations.
+- Final output layer with 10 nodes (for the CIFAR-10 classes).
+
+##### **2.2. Convolutional Neural Network (CNN):**
+- Built from scratch with multiple convolutional layers.
+- Includes 5 convolutional layers.
+- Batch normalization and dropout layers for regularization.
+- Max pooling layers to reduce dimensionality.
+- Final fully connected layers for classification.
+
+##### **2.3. ResNet (Transfer Learning):**
+- Use of the pretrained ResNet18 model on ImageNet.
+- Modification of the final fully connected layer for CIFAR-10 (10 classes).
+- Fine-tuning all layers after unfreezing the ResNet model.
+- Transfer learning approach allows leveraging pretrained weights for faster convergence.
+
+#### 3. **Loss Function and Optimizers:**
+- For all models, use **CrossEntropyLoss** for classification.
+- Optimizer:
+  - **SGD with momentum** for both CNN and ResNet models (with weight decay for regularization).
+  - **Adam** optimizer for Simple FeedForward Network.
+
+#### 4. **Training the Models:**
+- Train each model for 20–30 epochs.
+- Use learning rate scheduling with **StepLR** to adjust learning rates dynamically for CNN and ResNet.
+- Track training and test accuracy for each model.
+  
+#### 5. **Evaluation and Results:**
+- Evaluate all models on the test set.
+- Visualize the accuracy and loss curves across epochs.
+  
+#### 6. **Visualization of Predictions:**
+- Display example predictions for all models (Simple FeedForward, CNN, ResNet).
+- Show 5 sample images with predicted and actual labels.
+  
+#### 7. **Comparison of Model Performance:**
+- Compare the training and test accuracy of all three models.
+- Discuss the strengths and weaknesses of each architecture in handling CIFAR-10 images.
+  - Simple FeedForward: Limited performance due to lack of spatial feature extraction.
+  - CNN: Better feature extraction and generalization with convolutional layers.
+  - ResNet: Transfer learning allows rapid convergence and higher accuracy, leveraging pretrained knowledge from ImageNet.
 </details>
 
 #### 🚀 How to Run the Notebook:
