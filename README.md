@@ -11,7 +11,13 @@ The goal of this repository is to provide a practical, beginner-to-advanced lear
 - **[🔗 Notebook 2: Building Neural Network from Scratch](https://colab.research.google.com/drive/1UeV8DGYC6vUjRXijdMWQt2z0SdgRx3v0?usp=sharing)**
 - **[🔗 Notebook 3: PyTorch Autograd, Gradient Tracking and Fine-Tuning](https://colab.research.google.com/drive/1URGFgc-1KgwRacI-BspVKDdpur06wuvI?usp=sharing)**  
 - [Future Notebooks] (coming soon)
-
+---
+| **Name of the Notebook**                                        | **Brief Description**                                                                                     | **Notebook Colab URL**                                     |
+|------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|------------------------------------------------------------|
+| Exploring_PyTorch_Tensor_Operations.ipynb                        | Introduces foundational tensor operations in PyTorch, covering tensor initialization, manipulation, and basic math operations. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1zxiKzcRWMQ2ukA50v6V9cPjrsHfSiuUn?usp=sharing)                                          |
+| 2_Building_Neural_Network_from_Scratch.ipynb                     | Walks through building a neural network from scratch in PyTorch, including forward and backward propagation. | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1UeV8DGYC6vUjRXijdMWQt2z0SdgRx3v0?usp=sharing)                                          |
+| 3_PyTorch_Autograd,_Gradient_Tracking_and_Fine_Tuning.ipynb       | Explores PyTorch’s `autograd`, gradient tracking, and fine-tuning models with `torch.no_grad()`.            | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1URGFgc-1KgwRacI-BspVKDdpur06wuvI?usp=sharing)                                          |
+| Notebook-Implementation/3_Image_Classification_FeedForward,_CNN,_and_ResNet.ipynb | Covers image classification using FeedForward networks, CNNs, and fine-tuning ResNet models.               | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](#)                                          |
 ---
 🧠 `Click to expland for details`
 <details>
