@@ -9,7 +9,7 @@ The goal of this repository is to provide a practical, beginner-to-advanced lear
 ### Featured Notebooks:
 - **[🔗 Notebook 1: Exploring PyTorch Tensor Operations](https://colab.research.google.com/drive/1zxiKzcRWMQ2ukA50v6V9cPjrsHfSiuUn?usp=sharing)**
 - **[🔗 Notebook 2: Building Neural Network from Scratch](https://colab.research.google.com/drive/1UeV8DGYC6vUjRXijdMWQt2z0SdgRx3v0?usp=sharing)**
-- **[🔗 Notebook 2: 3. PyTorch Autograd, Gradient Tracking and Fine-Tuning.ipynb](https://colab.research.google.com/drive/1URGFgc-1KgwRacI-BspVKDdpur06wuvI?usp=sharing)**  
+- **[🔗 Notebook 3: PyTorch Autograd, Gradient Tracking and Fine-Tuning.ipynb](https://colab.research.google.com/drive/1URGFgc-1KgwRacI-BspVKDdpur06wuvI?usp=sharing)**  
 - [Future Notebooks] (coming soon)
 
 ---
