@@ -1,0 +1,2652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PyTorch Playground — a grad school</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F7F9F4;
+  --grid:#DCE7ED;
+  --grid-strong:#C7D8E2;
+  --ink:#22303C;
+  --ink-soft:#5C6B77;
+  --ink-faint:#8B99A4;
+  --ember:#EE4C2C;
+  --ember-soft:#FBE3DC;
+  --blue:#2B5FD9;
+  --blue-soft:#E1E9FB;
+  --green:#178A5B;
+  --green-soft:#DDF1E7;
+  --card:#FFFFFF;
+  --code-bg:#20272E;
+  --code-ink:#D7E0E8;
+  --line:#D3DEE5;
+  --shadow:0 1px 2px rgba(34,48,60,.06), 0 8px 24px -12px rgba(34,48,60,.18);
+  --r:10px;
+  --disp:'Space Grotesk',sans-serif;
+  --body:'IBM Plex Sans',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--body);color:var(--ink);
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+    linear-gradient(var(--grid-strong) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-strong) 1px, transparent 1px);
+  background-size:24px 24px,24px 24px,120px 120px,120px 120px;
+  font-size:16px;line-height:1.65;
+}
+::selection{background:var(--ember-soft)}
+button{font-family:inherit;cursor:pointer}
+a{color:var(--blue)}
+.mono{font-family:var(--mono)}
+
+/* ---------- topbar ---------- */
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:58px;z-index:60;
+  background:rgba(247,249,244,.92);backdrop-filter:blur(8px);
+  border-bottom:1.5px solid var(--ink);
+  display:flex;align-items:center;gap:16px;padding:0 18px;
+}
+.wordmark{display:flex;align-items:baseline;gap:9px;text-decoration:none;color:var(--ink)}
+.wordmark b{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.02em}
+.wordmark b em{font-style:normal;color:var(--ember)}
+.wordmark span{font-family:var(--mono);font-size:11px;color:var(--ink-soft);letter-spacing:.04em}
+.menu-btn{display:none;border:1.5px solid var(--ink);background:var(--card);border-radius:8px;width:36px;height:36px;font-size:16px;line-height:1}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.xp-wrap{display:flex;align-items:center;gap:10px}
+.xp-bar{width:150px;height:10px;border:1.5px solid var(--ink);border-radius:99px;background:var(--card);overflow:hidden}
+.xp-fill{height:100%;width:0%;background:repeating-linear-gradient(-45deg,var(--ember),var(--ember) 6px,#F97B5F 6px,#F97B5F 12px);transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.xp-label{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);white-space:nowrap}
+.rank-chip{font-family:var(--mono);font-size:11.5px;font-weight:600;border:1.5px solid var(--ink);border-radius:99px;padding:4px 12px;background:var(--card);white-space:nowrap;box-shadow:2px 2px 0 var(--ink)}
+.rank-chip i{font-style:normal;color:var(--ember)}
+@media(max-width:900px){.xp-label{display:none}.xp-bar{width:90px}}
+@media(max-width:640px){.rank-chip{display:none}}
+
+/* ---------- layout ---------- */
+.frame{display:flex;padding-top:58px;min-height:100vh}
+.sidebar{
+  width:288px;flex-shrink:0;position:sticky;top:58px;height:calc(100vh - 58px);
+  overflow-y:auto;border-right:1.5px solid var(--ink);
+  background:rgba(255,255,255,.6);padding:18px 14px 60px;
+}
+.sidebar::-webkit-scrollbar{width:8px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--grid-strong);border-radius:4px}
+.side-home{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:1.5px solid var(--ink);background:var(--card);border-radius:8px;padding:8px 12px;font-family:var(--mono);font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:16px;box-shadow:2px 2px 0 var(--ink);transition:transform .12s}
+.side-home:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--ink)}
+.act{margin-bottom:18px}
+.act-head{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);padding:0 10px 6px;display:flex;justify-content:space-between;align-items:baseline}
+.act-head b{color:var(--ember)}
+.ch-link{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:none;border-radius:8px;padding:7px 10px;font-family:var(--body);font-size:13.5px;color:var(--ink);transition:background .12s}
+.ch-link:hover{background:var(--blue-soft)}
+.ch-link.active{background:var(--ink);color:#fff}
+.ch-link.active .ch-num{color:#F9B4A4}
+.ch-num{font-family:var(--mono);font-size:11px;color:var(--ink-faint);width:20px;flex-shrink:0}
+.ch-dot{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--ink-faint);flex-shrink:0;margin-left:auto}
+.ch-link.active .ch-dot{border-color:#fff}
+.ch-dot.done{background:var(--green);border-color:var(--green)}
+.ch-title-s{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.main{flex:1;min-width:0;padding:36px 44px 120px;max-width:1060px;margin:0 auto}
+@media(max-width:980px){
+  .menu-btn{display:block}
+  .sidebar{position:fixed;left:0;top:58px;z-index:50;transform:translateX(-102%);transition:transform .25s;background:var(--paper);box-shadow:var(--shadow)}
+  .sidebar.open{transform:translateX(0)}
+  .main{padding:24px 18px 100px}
+}
+
+/* ---------- typography / content ---------- */
+.eyebrow{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ember);display:flex;align-items:center;gap:10px}
+.eyebrow::after{content:"";height:1.5px;width:56px;background:var(--ember)}
+h1.ch-h{font-family:var(--disp);font-weight:700;font-size:clamp(30px,4.4vw,44px);line-height:1.08;letter-spacing:-.015em;margin:10px 0 8px}
+.ch-sub{font-size:17px;color:var(--ink-soft);max-width:62ch}
+.ch-meta{display:flex;gap:16px;margin-top:14px;font-family:var(--mono);font-size:12px;color:var(--ink-soft);flex-wrap:wrap}
+.ch-meta span b{color:var(--ink)}
+h2.sec-h{font-family:var(--disp);font-weight:600;font-size:24px;letter-spacing:-.01em;margin:44px 0 12px;display:flex;align-items:baseline;gap:12px}
+h2.sec-h .sec-idx{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ember)}
+.prose p{margin:0 0 14px;max-width:72ch}
+.prose ul,.prose ol{margin:0 0 14px 22px;max-width:70ch}
+.prose li{margin-bottom:6px}
+.prose code{font-family:var(--mono);font-size:.86em;background:var(--blue-soft);border-radius:4px;padding:1px 5px;color:#1E4094}
+.prose strong{font-weight:600}
+.gotcha{border:1.5px solid var(--ink);border-left:6px solid var(--ember);background:var(--card);border-radius:var(--r);padding:14px 16px;margin:18px 0;max-width:72ch;box-shadow:var(--shadow)}
+.gotcha .g-tag{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.12em;color:var(--ember);text-transform:uppercase;display:block;margin-bottom:4px}
+.gotcha p{margin:0}
+.whybox{border:1.5px solid var(--ink);border-left:6px solid var(--green);background:var(--card);border-radius:var(--r);padding:14px 16px;margin:18px 0;max-width:72ch;box-shadow:var(--shadow)}
+.whybox .g-tag{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.12em;color:var(--green);text-transform:uppercase;display:block;margin-bottom:4px}
+.whybox p{margin:0}
+
+/* ---------- code ---------- */
+.codecard{position:relative;background:var(--code-bg);border:1.5px solid var(--ink);border-radius:var(--r);margin:16px 0 20px;box-shadow:4px 4px 0 var(--ink);overflow:hidden}
+.codecard .cc-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid #333E48}
+.cc-dots{display:flex;gap:5px}
+.cc-dots i{width:9px;height:9px;border-radius:50%;background:#3B4854;display:block}
+.cc-name{font-family:var(--mono);font-size:11px;color:#93A3B1;margin-left:4px}
+.cc-copy{margin-left:auto;font-family:var(--mono);font-size:11px;color:#B9C6D1;background:#2C353E;border:1px solid #3D4954;border-radius:6px;padding:3px 10px;transition:background .12s}
+.cc-copy:hover{background:#38434D}
+.cc-copy.ok{color:#7BE0B0;border-color:#2E6B4F}
+pre.code{overflow-x:auto;padding:14px 16px;font-family:var(--mono);font-size:13px;line-height:1.62;color:var(--code-ink)}
+pre.code::-webkit-scrollbar{height:8px}
+pre.code::-webkit-scrollbar-thumb{background:#3B4854;border-radius:4px}
+.tk-k{color:#F58C74}      /* keyword */
+.tk-s{color:#9ED89B}      /* string */
+.tk-c{color:#7A8894;font-style:italic} /* comment */
+.tk-n{color:#8FC7FF}      /* number */
+.tk-t{color:#F5C97B}      /* torch/nn */
+.tk-d{color:#C9A7F5}      /* decorator */
+.code-cap{font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin:-12px 0 20px;padding-left:4px}
+
+/* ---------- labs (widgets) ---------- */
+.lab{border:1.5px solid var(--ink);border-radius:14px;background:var(--card);box-shadow:5px 5px 0 var(--ink);margin:26px 0;overflow:hidden}
+.lab-bar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1.5px solid var(--ink);background:linear-gradient(0deg,var(--ember-soft),var(--ember-soft))}
+.lab-bar .lab-flame{font-size:15px}
+.lab-bar b{font-family:var(--disp);font-weight:600;font-size:15px;letter-spacing:.01em}
+.lab-bar span{font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin-left:auto;text-transform:uppercase;letter-spacing:.1em}
+.lab-body{padding:18px}
+.lab-note{font-size:13.5px;color:var(--ink-soft);margin-bottom:14px;max-width:70ch}
+.ctrl-row{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:14px}
+.ctrl{display:flex;flex-direction:column;gap:4px}
+.ctrl label{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.ctrl select,.ctrl input[type=text]{font-family:var(--mono);font-size:13px;border:1.5px solid var(--ink);border-radius:7px;padding:6px 9px;background:#fff;color:var(--ink)}
+.ctrl input[type=range]{accent-color:var(--ember);width:150px}
+.btn{font-family:var(--mono);font-size:12.5px;font-weight:600;border:1.5px solid var(--ink);border-radius:8px;padding:8px 14px;background:var(--ink);color:#fff;box-shadow:2px 2px 0 rgba(34,48,60,.35);transition:transform .1s}
+.btn:hover{transform:translate(-1px,-1px)}
+.btn:active{transform:translate(1px,1px);box-shadow:none}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn.ember{background:var(--ember);border-color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.readout{font-family:var(--mono);font-size:12.5px;background:var(--paper);border:1.5px dashed var(--grid-strong);border-radius:8px;padding:8px 12px}
+.readout b{color:var(--ember)}
+
+/* tensor lab grids */
+.shape-viz{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-end;margin-top:6px}
+.sgrid{display:grid;gap:3px}
+.sgrid i{width:20px;height:20px;border-radius:4px;border:1.5px solid var(--ink);display:block}
+.sgrid i.a{background:var(--blue-soft)}
+.sgrid i.b{background:var(--ember-soft)}
+.sgrid i.o{background:var(--green-soft)}
+.sgrid i.ghost{opacity:.28;border-style:dashed}
+.sg-label{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin-top:6px;text-align:center}
+.bcast-msg{font-family:var(--mono);font-size:13px;margin-top:12px;padding:10px 12px;border-radius:8px;border:1.5px solid var(--ink)}
+.bcast-msg.ok{background:var(--green-soft)}
+.bcast-msg.err{background:var(--ember-soft)}
+
+/* autograd tape */
+.tape-svg{width:100%;height:auto;display:block}
+.node-rect{fill:#fff;stroke:var(--ink);stroke-width:1.5;rx:9}
+.node-op{fill:var(--blue-soft)}
+.node-loss{fill:var(--ember-soft)}
+.node-name{font-family:var(--mono);font-size:11px;fill:var(--ink-soft)}
+.node-val{font-family:var(--mono);font-size:14px;font-weight:600;fill:var(--ink)}
+.grad-chip{font-family:var(--mono);font-size:10.5px;font-weight:600;fill:var(--ember);opacity:0;transition:opacity .4s}
+.grad-chip.show{opacity:1}
+.edge{stroke:var(--ink);stroke-width:1.5;fill:none}
+.edge-back{stroke:var(--ember);stroke-width:2;stroke-dasharray:5 5;fill:none;opacity:0;transition:opacity .4s}
+.edge-back.show{opacity:1;animation:march 1s linear infinite}
+@keyframes march{to{stroke-dashoffset:-20}}
+
+/* train arena */
+.arena{display:grid;grid-template-columns:minmax(240px,300px) 1fr;gap:18px}
+@media(max-width:820px){.arena{grid-template-columns:1fr}}
+.arena canvas{width:100%;border:1.5px solid var(--ink);border-radius:10px;display:block;background:#fff;image-rendering:auto}
+.loss-canvas{margin-top:10px}
+.stat-strip{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.stat{font-family:var(--mono);font-size:12px;border:1.5px solid var(--ink);border-radius:8px;padding:6px 10px;background:var(--paper)}
+.stat b{color:var(--ember)}
+.mirror-code{margin-top:0}
+
+/* conv lab */
+.conv-wrap{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+.pix-grid{display:grid;gap:2px}
+.pix-grid i{width:22px;height:22px;border-radius:3px;display:block;border:1px solid rgba(34,48,60,.18)}
+.pix-grid i.hot{outline:2.5px solid var(--ember);outline-offset:-1px;z-index:2}
+.conv-sum{font-family:var(--mono);font-size:12.5px;margin-top:10px;min-height:22px;color:var(--ink-soft)}
+.kern-grid{display:grid;grid-template-columns:repeat(3,34px);gap:3px}
+.kern-grid i{height:34px;border:1.5px solid var(--ink);border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;background:#fff}
+
+/* attention lab */
+.tok-row{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px}
+.tok{font-family:var(--mono);font-size:14px;border:1.5px solid var(--ink);border-radius:8px;padding:7px 12px;background:#fff;transition:all .15s;position:relative}
+.tok:hover{transform:translateY(-2px)}
+.tok.sel{background:var(--ink);color:#fff;box-shadow:2px 2px 0 var(--ember)}
+.attn-bars{display:flex;gap:8px;align-items:flex-end;height:120px;margin-top:8px;flex-wrap:wrap}
+.abar{display:flex;flex-direction:column;align-items:center;gap:5px;justify-content:flex-end;height:100%}
+.abar .bar{width:34px;background:var(--ember);border:1.5px solid var(--ink);border-radius:5px 5px 0 0;transition:height .35s cubic-bezier(.2,.8,.2,1);min-height:2px}
+.abar .bl{font-family:var(--mono);font-size:10px;color:var(--ink-soft)}
+
+/* quiz */
+.quiz{border:1.5px solid var(--ink);border-radius:14px;background:var(--card);box-shadow:5px 5px 0 var(--ink);margin:34px 0;overflow:hidden}
+.quiz-bar{padding:10px 16px;border-bottom:1.5px solid var(--ink);background:var(--blue-soft);display:flex;align-items:center;gap:10px}
+.quiz-bar b{font-family:var(--disp);font-weight:600;font-size:15px}
+.quiz-bar span{font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin-left:auto;letter-spacing:.1em;text-transform:uppercase}
+.qq{padding:16px 18px;border-bottom:1px dashed var(--line)}
+.qq:last-child{border-bottom:none}
+.qq-q{font-weight:600;margin-bottom:10px;display:flex;gap:8px}
+.qq-q .qn{font-family:var(--mono);color:var(--ember);font-weight:600}
+.opt{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;margin-bottom:7px;cursor:pointer;font-size:14.5px;transition:border-color .12s,background .12s}
+.opt:hover{border-color:var(--ink)}
+.opt input{margin-top:3px;accent-color:var(--ember)}
+.opt.right{border-color:var(--green);background:var(--green-soft)}
+.opt.wrong{border-color:var(--ember);background:var(--ember-soft)}
+.qq-why{font-size:13.5px;color:var(--ink-soft);border-left:3px solid var(--green);padding:4px 10px;margin-top:8px;display:none}
+.qq-why.show{display:block}
+.quiz-foot{padding:14px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.quiz-score{font-family:var(--mono);font-size:13px}
+
+/* pager + complete */
+.ch-foot{margin-top:44px;display:flex;flex-direction:column;gap:16px}
+.complete-btn{align-self:flex-start}
+.pager{display:flex;gap:14px;flex-wrap:wrap}
+.pg{flex:1;min-width:220px;border:1.5px solid var(--ink);border-radius:12px;background:var(--card);padding:12px 16px;text-align:left;box-shadow:3px 3px 0 var(--ink);transition:transform .12s;font-family:var(--body)}
+.pg:hover{transform:translate(-2px,-2px)}
+.pg small{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);display:block}
+.pg b{font-family:var(--disp);font-size:15.5px}
+.pg.next{text-align:right}
+
+/* ---------- home ---------- */
+.hero{padding:26px 0 8px}
+.hero-kicker{font-family:var(--mono);font-size:12.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ember);display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--ink);background:var(--card);border-radius:99px;padding:5px 14px;box-shadow:2px 2px 0 var(--ink)}
+.hero h1{font-family:var(--disp);font-weight:700;font-size:clamp(38px,6vw,66px);line-height:1.02;letter-spacing:-.02em;margin:20px 0 14px;max-width:16ch}
+.hero h1 .u{box-shadow:inset 0 -.28em 0 var(--ember-soft)}
+.hero p.lead{font-size:18px;color:var(--ink-soft);max-width:58ch}
+.hero p.lead b{color:var(--ink)}
+.home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;margin-top:20px}
+.act-card{border:1.5px solid var(--ink);border-radius:14px;background:var(--card);padding:16px;box-shadow:4px 4px 0 var(--ink);cursor:pointer;text-align:left;transition:transform .12s;font-family:var(--body)}
+.act-card:hover{transform:translate(-2px,-2px)}
+.act-card small{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ember);font-weight:600}
+.act-card h3{font-family:var(--disp);font-size:18px;margin:5px 0 6px}
+.act-card p{font-size:13.5px;color:var(--ink-soft)}
+.act-card .cnt{font-family:var(--mono);font-size:11px;color:var(--ink-faint);display:block;margin-top:10px}
+.how-strip{display:flex;gap:0;margin:38px 0 10px;border:1.5px solid var(--ink);border-radius:14px;overflow:hidden;background:var(--card);box-shadow:4px 4px 0 var(--ink);flex-wrap:wrap}
+.how{flex:1;min-width:170px;padding:16px;border-right:1.5px dashed var(--line)}
+.how:last-child{border-right:none}
+.how b{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ember)}
+.how h4{font-family:var(--disp);font-size:16px;margin:4px 0 4px}
+.how p{font-size:13px;color:var(--ink-soft)}
+.session-note{font-family:var(--mono);font-size:11.5px;color:var(--ink-faint);margin-top:26px}
+h2.home-h{font-family:var(--disp);font-weight:600;font-size:22px;margin:40px 0 4px}
+.home-sub{color:var(--ink-soft);font-size:14.5px}
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important;transition:none!important}
+}
+:focus-visible{outline:2.5px solid var(--blue);outline-offset:2px;border-radius:4px}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <button class="menu-btn" id="menuBtn" aria-label="Toggle curriculum">☰</button>
+  <a class="wordmark" href="#/" aria-label="PyTorch Playground home">
+    <b>PyTorch<em>▲</em>Playground</b><span>a grad school</span>
+  </a>
+  <div class="top-right">
+    <div class="xp-wrap" title="XP earned this session">
+      <span class="xp-label" id="xpLabel">0 XP</span>
+      <div class="xp-bar" role="progressbar" aria-label="XP progress to next rank"><div class="xp-fill" id="xpFill"></div></div>
+    </div>
+    <div class="rank-chip" id="rankChip"><i>rank</i> Tensor Novice</div>
+  </div>
+</header>
+
+<div class="frame">
+  <nav class="sidebar" id="sidebar" aria-label="Curriculum"></nav>
+  <main class="main" id="main"></main>
+</div>
+
+<script>
+/* =====================================================
+   PyTorch Playground — a grad school
+   A single-file interactive curriculum. All labs run
+   real math (backprop included) in your browser.
+   ===================================================== */
+
+/* ---------- tiny utils ---------- */
+const $  = (s,el=document)=>el.querySelector(s);
+const $$ = (s,el=document)=>[...el.querySelectorAll(s)];
+const el = (tag,cls,html)=>{const e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e;};
+const esc = s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const fmt = (x,d=3)=>Number.isFinite(x)?(+x).toFixed(d).replace(/\.?0+$/,'')||'0':'—';
+
+/* ---------- python syntax highlighter (curated-source safe) ---------- */
+const PY_KW = /\b(def|class|return|import|from|as|for|in|if|elif|else|while|with|try|except|finally|lambda|yield|pass|break|continue|not|and|or|is|None|True|False|raise|assert|global|del|async|await)\b/g;
+function hl(src){
+  const lines = src.split('\n').map(line=>{
+    let s = esc(line);
+    const stash=[];
+    // strings first
+    s = s.replace(/(&quot;.*?&quot;|&#x27;.*?&#x27;|"[^"]*"|'[^']*')/g, m=>{stash.push('<span class="tk-s">'+m+'</span>');return '\x00'+(stash.length-1)+'\x00';});
+    // comment
+    s = s.replace(/(#.*)$/, m=>{stash.push('<span class="tk-c">'+m+'</span>');return '\x00'+(stash.length-1)+'\x00';});
+    s = s.replace(/(@[\w.]+)/g,'<span class="tk-d">$1</span>');
+    s = s.replace(PY_KW,'<span class="tk-k">$1</span>');
+    s = s.replace(/\b(torch|nn|F|optim|dist|autograd|torchvision|Tensor|DataLoader|Dataset|cuda|pl|mps)\b/g,'<span class="tk-t">$1</span>');
+    s = s.replace(/\b(\d+\.?\d*(?:e-?\d+)?)\b/g,'<span class="tk-n">$1</span>');
+    s = s.replace(/\x00(\d+)\x00/g,(_,i)=>stash[+i]);
+    return s;
+  });
+  return lines.join('\n');
+}
+function codeCard(code, name='snippet.py'){
+  const id='cc'+Math.random().toString(36).slice(2,8);
+  return `<div class="codecard">
+    <div class="cc-bar"><span class="cc-dots"><i></i><i></i><i></i></span>
+      <span class="cc-name">${name}</span>
+      <button class="cc-copy" data-copy="${id}">copy</button></div>
+    <pre class="code" id="${id}">${hl(code)}</pre>
+  </div>`;
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.cc-copy'); if(!b) return;
+  const pre=document.getElementById(b.dataset.copy);
+  navigator.clipboard.writeText(pre.innerText).then(()=>{
+    b.textContent='copied ✓'; b.classList.add('ok');
+    setTimeout(()=>{b.textContent='copy';b.classList.remove('ok');},1400);
+  });
+});
+
+/* ---------- XP / ranks (session only) ---------- */
+const RANKS=[[0,'Tensor Novice'],[150,'Shape Shifter'],[400,'Autograd Adept'],[800,'Backprop Battlemage'],[1300,'CUDA Conjurer'],[2000,'Grandmaster of Gradients']];
+const state={xp:0,done:new Set(),answered:new Set()};
+function addXP(n){
+  state.xp+=n; renderXP();
+  const chip=$('#rankChip'); chip.style.transform='scale(1.08)';
+  setTimeout(()=>chip.style.transform='',180);
+}
+function renderXP(){
+  let cur=RANKS[0],next=null;
+  for(const r of RANKS){ if(state.xp>=r[0]) cur=r; else {next=r;break;} }
+  const lo=cur[0], hi=next?next[0]:cur[0]+1;
+  const pct=next?Math.min(100,100*(state.xp-lo)/(hi-lo)):100;
+  $('#xpFill').style.width=pct+'%';
+  $('#xpLabel').textContent=state.xp+' XP'+(next?` · ${next[0]-state.xp} to ${next[1]}`:' · max rank');
+  $('#rankChip').innerHTML='<i>rank</i> '+cur[1];
+}
+
+/* =====================================================
+   LAB 1 — Broadcast Bench (tensor shapes)
+   ===================================================== */
+function broadcastShapes(a,b){
+  const A=[...a].reverse(),B=[...b].reverse(),out=[];
+  const n=Math.max(A.length,B.length);
+  for(let i=0;i<n;i++){
+    const x=A[i]??1,y=B[i]??1;
+    if(x===y||x===1||y===1) out.push(Math.max(x,y));
+    else return {ok:false,dim:n-1-i,x,y};
+  }
+  return {ok:true,shape:out.reverse()};
+}
+function mountTensorLab(host){
+  host.innerHTML=`
+  <div class="lab"><div class="lab-bar"><span class="lab-flame">▲</span><b>Lab · Broadcast Bench</b><span>live</span></div>
+  <div class="lab-body">
+    <p class="lab-note">Broadcasting aligns shapes <strong>from the right</strong>. Each trailing dimension pair must be equal, or one of them must be 1 (it gets stretched, for free, with no copy). Type any shapes and watch the rule apply.</p>
+    <div class="ctrl-row">
+      <div class="ctrl"><label for="shA">tensor a — shape</label><input type="text" id="shA" value="3, 1" size="10"></div>
+      <div class="ctrl"><label for="shB">tensor b — shape</label><input type="text" id="shB" value="1, 4" size="10"></div>
+      <div class="ctrl"><label>&nbsp;</label>
+        <div style="display:flex;gap:8px">
+          <button class="btn ghost" data-preset="3,1|1,4">3,1 × 1,4</button>
+          <button class="btn ghost" data-preset="8,1,6,1|7,1,5">8,1,6,1 × 7,1,5</button>
+          <button class="btn ghost" data-preset="2,3|3,2">2,3 × 3,2 💥</button>
+        </div>
+      </div>
+    </div>
+    <div id="bcOut"></div>
+  </div></div>`;
+  const shA=$('#shA',host),shB=$('#shB',host),out=$('#bcOut',host);
+  function parse(v){return v.split(',').map(s=>parseInt(s.trim())).filter(n=>Number.isFinite(n)&&n>0);}
+  function grid(r,c,cls,ghostMask){
+    let h=`<div class="sgrid" style="grid-template-columns:repeat(${c},20px)">`;
+    for(let i=0;i<r;i++)for(let j=0;j<c;j++){
+      const g=ghostMask&&ghostMask(i,j)?' ghost':'';
+      h+=`<i class="${cls}${g}"></i>`;
+    }
+    return h+'</div>';
+  }
+  function draw(){
+    const a=parse(shA.value),b=parse(shB.value);
+    if(!a.length||!b.length){out.innerHTML='<div class="bcast-msg err">Enter shapes like <b>3, 1</b></div>';return;}
+    const r=broadcastShapes(a,b);
+    let viz='';
+    if(a.length<=2&&b.length<=2&&r.ok&&r.shape.length<=2){
+      const dim2=s=>s.length===1?[1,s[0]]:s;
+      const [ar,ac]=dim2(a),[br,bc]=dim2(b),[or_,oc]=dim2(r.shape);
+      viz=`<div class="shape-viz">
+        <div><div>${grid(or_,oc,'a',(i,j)=>i>=ar||j>=ac)}</div><div class="sg-label">a (${a.join(',')}) stretched</div></div>
+        <div style="font-family:var(--mono);font-size:20px;padding-bottom:24px">+</div>
+        <div><div>${grid(or_,oc,'b',(i,j)=>i>=br||j>=bc)}</div><div class="sg-label">b (${b.join(',')}) stretched</div></div>
+        <div style="font-family:var(--mono);font-size:20px;padding-bottom:24px">=</div>
+        <div><div>${grid(or_,oc,'o')}</div><div class="sg-label">result (${r.shape.join(',')})</div></div>
+      </div>`;
+    }
+    if(r.ok){
+      out.innerHTML=viz+`<div class="bcast-msg ok">✓ torch.Size([${r.shape.join(', ')}]) — dashed cells are virtual: PyTorch never materialises them (stride 0).</div>`;
+    }else{
+      out.innerHTML=`<div class="bcast-msg err">💥 RuntimeError: The size of tensor a (${r.x}) must match the size of tensor b (${r.y}) at non-singleton dimension ${r.dim}. Neither is 1, so there is nothing to stretch.</div>`;
+    }
+  }
+  shA.addEventListener('input',draw); shB.addEventListener('input',draw);
+  $$('.btn[data-preset]',host).forEach(b=>b.addEventListener('click',()=>{
+    const [x,y]=b.dataset.preset.split('|'); shA.value=x; shB.value=y; draw();
+  }));
+  draw();
+}
+
+/* =====================================================
+   LAB 2 — The Autograd Tape (live computational graph)
+   L = (w·x + b − t)²   with x=2, t=6
+   ===================================================== */
+function mountTapeLab(host,{hero=false}={}){
+  const X=2,T=6;
+  host.innerHTML=`
+  <div class="lab"><div class="lab-bar"><span class="lab-flame">▲</span><b>Lab · The Autograd Tape</b><span>live</span></div>
+  <div class="lab-body">
+    <p class="lab-note">${hero
+      ?'This is a real computational graph for <span class="mono">loss = (w·x + b − t)²</span> with x=2, target t=6. Drag the weights — it recomputes forward instantly. Then call <span class="mono">.backward()</span> to watch gradients flow right-to-left, and <span class="mono">optimizer.step()</span> to descend.'
+      :'One neuron, one loss. Every slider move is a forward pass. <span class="mono">backward()</span> replays the tape in reverse, chain rule at every node. <span class="mono">step()</span> nudges w and b against their gradients — this is the entire secret of deep learning.'}</p>
+    <div class="ctrl-row">
+      <div class="ctrl"><label>w = <span class="wv mono"></span></label><input type="range" class="rw" min="-3" max="3" step="0.05" value="-1"></div>
+      <div class="ctrl"><label>b = <span class="bv mono"></span></label><input type="range" class="rb" min="-4" max="4" step="0.05" value="0.5"></div>
+      <button class="btn ember bw">loss.backward()</button>
+      <button class="btn stp" disabled>optimizer.step()  lr=0.1</button>
+      <button class="btn ghost zg">zero_grad()</button>
+    </div>
+    <svg class="tape-svg" viewBox="0 0 760 240" role="img" aria-label="Computational graph of a one-neuron loss">
+      <defs><marker id="arr${hero?'H':'C'}" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#22303C"/></marker></defs>
+      <g class="edges"></g><g class="backedges"></g><g class="nodes"></g>
+    </svg>
+    <div class="readout tape-read" style="margin-top:8px"></div>
+  </div></div>`;
+  const svg=$('svg',host);
+  const NODES=[
+    {id:'w', x:30,  y:30,  name:'w · leaf',  cls:''},
+    {id:'x', x:30,  y:100, name:'x = 2',     cls:''},
+    {id:'b', x:30,  y:170, name:'b · leaf',  cls:''},
+    {id:'m', x:230, y:65,  name:'mul',       cls:'node-op'},
+    {id:'z', x:400, y:100, name:'add',       cls:'node-op'},
+    {id:'e', x:545, y:100, name:'sub t=6',   cls:'node-op'},
+    {id:'L', x:672, y:100, name:'pow 2 → L', cls:'node-loss'},
+  ];
+  const EDGES=[['w','m'],['x','m'],['b','z'],['m','z'],['z','e'],['e','L']];
+  const P={}; NODES.forEach(n=>P[n.id]=n);
+  const W=78,H=52;
+  const path=(a,b)=>{const A=P[a],B=P[b];const x1=A.x+W,y1=A.y+H/2,x2=B.x,y2=B.y+H/2;const mx=(x1+x2)/2;return `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`;};
+  $('.edges',svg).innerHTML=EDGES.map(([a,b])=>`<path class="edge" marker-end="url(#arr${hero?'H':'C'})" d="${path(a,b)}"/>`).join('');
+  $('.backedges',svg).innerHTML=EDGES.map(([a,b])=>`<path class="edge-back be-${a}" d="${path(a,b)}"/>`).join('');
+  $('.nodes',svg).innerHTML=NODES.map(n=>`
+    <g transform="translate(${n.x},${n.y})">
+      <rect class="node-rect ${n.cls}" width="${W}" height="${H}" rx="9"/>
+      <text class="node-name" x="8" y="16">${n.name}</text>
+      <text class="node-val nv-${n.id}" x="8" y="38">0</text>
+      <text class="grad-chip gc-${n.id}" x="8" y="${H+16}">∇ 0</text>
+    </g>`).join('');
+  const rw=$('.rw',host),rb=$('.rb',host),bw=$('.bw',host),stp=$('.stp',host),zg=$('.zg',host);
+  let grads=null;
+  function fwd(){
+    const w=+rw.value,b=+rb.value;
+    const m=w*X, z=m+b, e=z-T, L=e*e;
+    $('.wv',host).textContent=fmt(w,2); $('.bv',host).textContent=fmt(b,2);
+    const set=(id,v)=>$('.nv-'+id,svg).textContent=fmt(v,2);
+    set('w',w);set('x',X);set('b',b);set('m',m);set('z',z);set('e',e);set('L',L);
+    $('.tape-read',host).innerHTML=`forward: loss = (${fmt(w,2)}·2 + ${fmt(b,2)} − 6)² = <b>${fmt(L,3)}</b>${grads?` &nbsp;·&nbsp; grads: ∂L/∂w=<b>${fmt(grads.w,3)}</b>, ∂L/∂b=<b>${fmt(grads.b,3)}</b>`:' — call backward() to get gradients'}`;
+    return {w,b,m,z,e,L};
+  }
+  function clearGrads(){
+    grads=null; stp.disabled=true;
+    $$('.grad-chip',svg).forEach(g=>g.classList.remove('show'));
+    $$('.edge-back',svg).forEach(g=>g.classList.remove('show'));
+    fwd();
+  }
+  function backward(){
+    const {e}=fwd();
+    const dE=2*e;                    // ∂L/∂e
+    grads={L:1,e:dE,z:dE,m:dE,b:dE,w:dE*X,x:dE*(+rw.value)};
+    const order=['L','e','z','m','b','w','x'];
+    order.forEach((id,i)=>setTimeout(()=>{
+      const c=$('.gc-'+id,svg); c.textContent='∇ '+fmt(grads[id],3); c.classList.add('show');
+      EDGES.filter(E=>E[0]===id).forEach(()=>$('.be-'+id,svg)?.classList.add('show'));
+    }, 240*i));
+    setTimeout(()=>{stp.disabled=false;fwd();}, 240*order.length);
+  }
+  rw.addEventListener('input',()=>{clearGrads();});
+  rb.addEventListener('input',()=>{clearGrads();});
+  bw.addEventListener('click',backward);
+  zg.addEventListener('click',clearGrads);
+  stp.addEventListener('click',()=>{
+    if(!grads) return;
+    rw.value=(+rw.value-0.1*grads.w).toFixed(3);
+    rb.value=(+rb.value-0.1*grads.b).toFixed(3);
+    clearGrads(); backward();
+  });
+  fwd();
+}
+
+/* =====================================================
+   LAB 3 — Training Arena (real MLP + backprop in JS)
+   ===================================================== */
+function makeData(kind,n=240){
+  const pts=[];const R=()=>Math.random()*2-1;
+  for(let i=0;i<n;i++){
+    let x,y,l;
+    if(kind==='circles'){
+      const inner=i%2===0;
+      const r=inner?Math.random()*0.9:1.6+Math.random()*0.8;
+      const a=Math.random()*Math.PI*2;
+      x=r*Math.cos(a)/2.6; y=r*Math.sin(a)/2.6; l=inner?1:0;
+    }else if(kind==='xor'){
+      x=R()*0.9; y=R()*0.9; l=(x*y>0)?1:0;
+      x+=R()*0.05; y+=R()*0.05;
+    }else if(kind==='moons'){
+      const up=i%2===0; const a=Math.random()*Math.PI;
+      if(up){x=Math.cos(a)*0.6-0.25;y=Math.sin(a)*0.6-0.15;l=1;}
+      else{x=0.25-Math.cos(a)*0.6;y=0.25-Math.sin(a)*0.6;l=0;}
+      x+=R()*0.05;y+=R()*0.05;
+    }else{ // spiral
+      const arm=i%2; const t=(i/n)*3.2*Math.PI+0.4;
+      const r=t/(3.6*Math.PI);
+      const s=arm?0:Math.PI;
+      x=r*Math.cos(t+s); y=r*Math.sin(t+s); l=arm;
+      x+=R()*0.02;y+=R()*0.02;
+    }
+    pts.push([x,y,l]);
+  }
+  return pts;
+}
+class MLP{
+  constructor(h,act){this.h=h;this.act=act;this.init();}
+  init(){
+    const rnd=(n,scale)=>Float64Array.from({length:n},()=>(Math.random()*2-1)*scale);
+    const s1=Math.sqrt(2/2),s2=Math.sqrt(2/this.h),s3=Math.sqrt(2/this.h);
+    this.W1=rnd(this.h*2,s1); this.b1=new Float64Array(this.h);
+    this.W2=rnd(this.h*this.h,s2); this.b2=new Float64Array(this.h);
+    this.W3=rnd(this.h,s3); this.b3=new Float64Array(1);
+  }
+  actF(v){return this.act==='relu'?Math.max(0,v):Math.tanh(v);}
+  actG(v,a){return this.act==='relu'?(v>0?1:0):1-a*a;}
+  forward(x,y,cache){
+    const h=this.h;
+    const z1=new Float64Array(h),a1=new Float64Array(h);
+    for(let i=0;i<h;i++){z1[i]=this.W1[i*2]*x+this.W1[i*2+1]*y+this.b1[i];a1[i]=this.actF(z1[i]);}
+    const z2=new Float64Array(h),a2=new Float64Array(h);
+    for(let i=0;i<h;i++){let s=this.b2[i];for(let j=0;j<h;j++)s+=this.W2[i*h+j]*a1[j];z2[i]=s;a2[i]=this.actF(s);}
+    let z3=this.b3[0];for(let i=0;i<h;i++)z3+=this.W3[i]*a2[i];
+    const p=1/(1+Math.exp(-z3));
+    if(cache){cache.z1=z1;cache.a1=a1;cache.z2=z2;cache.a2=a2;cache.p=p;cache.x=x;cache.y=y;}
+    return p;
+  }
+  trainEpoch(data,lr){
+    const h=this.h;
+    const gW1=new Float64Array(h*2),gb1=new Float64Array(h);
+    const gW2=new Float64Array(h*h),gb2=new Float64Array(h);
+    const gW3=new Float64Array(h);let gb3=0;
+    let loss=0,correct=0;const c={};
+    for(const [x,y,t] of data){
+      const p=this.forward(x,y,c);
+      const eps=1e-7;
+      loss+=-(t*Math.log(p+eps)+(1-t)*Math.log(1-p+eps));
+      if((p>0.5?1:0)===t)correct++;
+      const d3=p-t;                        // ∂L/∂z3 (BCE + sigmoid)
+      gb3+=d3;
+      const d2=new Float64Array(h);
+      for(let i=0;i<h;i++){gW3[i]+=d3*c.a2[i];d2[i]=d3*this.W3[i]*this.actG(c.z2[i],c.a2[i]);}
+      const d1=new Float64Array(h);
+      for(let i=0;i<h;i++){
+        gb2[i]+=d2[i];
+        for(let j=0;j<h;j++){gW2[i*h+j]+=d2[i]*c.a1[j];d1[j]+=d2[i]*this.W2[i*h+j];}
+      }
+      for(let j=0;j<h;j++){
+        d1[j]*=this.actG(c.z1[j],c.a1[j]);
+        gb1[j]+=d1[j];gW1[j*2]+=d1[j]*x;gW1[j*2+1]+=d1[j]*y;
+      }
+    }
+    const n=data.length,k=lr/n;
+    for(let i=0;i<this.W1.length;i++)this.W1[i]-=k*gW1[i];
+    for(let i=0;i<h;i++)this.b1[i]-=k*gb1[i];
+    for(let i=0;i<this.W2.length;i++)this.W2[i]-=k*gW2[i];
+    for(let i=0;i<h;i++)this.b2[i]-=k*gb2[i];
+    for(let i=0;i<h;i++)this.W3[i]-=k*gW3[i];
+    this.b3[0]-=k*gb3;
+    return {loss:loss/n,acc:correct/n};
+  }
+}
+function mountArena(host){
+  host.innerHTML=`
+  <div class="lab"><div class="lab-bar"><span class="lab-flame">▲</span><b>Lab · Training Arena</b><span>real backprop</span></div>
+  <div class="lab-body">
+    <p class="lab-note">A genuine 2-hidden-layer MLP trains in your browser — forward pass, binary cross-entropy, hand-derived backprop, gradient descent. The code card on the right is the <strong>exact PyTorch equivalent of your current settings</strong> and rewrites itself as you tweak them.</p>
+    <div class="ctrl-row">
+      <div class="ctrl"><label>dataset</label><select class="ds">
+        <option value="circles">circles</option><option value="xor">xor</option>
+        <option value="moons">moons</option><option value="spiral" selected>spiral</option></select></div>
+      <div class="ctrl"><label>hidden units <span class="hv mono"></span></label><input type="range" class="hu" min="2" max="24" step="1" value="8"></div>
+      <div class="ctrl"><label>activation</label><select class="ac"><option>tanh</option><option>relu</option></select></div>
+      <div class="ctrl"><label>learning rate <span class="lv mono"></span></label><input type="range" class="lr" min="-2.3" max="0.7" step="0.05" value="0"></div>
+      <button class="btn ember play">▶ train</button>
+      <button class="btn ghost rst">↺ reset weights</button>
+    </div>
+    <div class="arena">
+      <div>
+        <canvas class="bc" width="300" height="300" aria-label="Decision boundary"></canvas>
+        <canvas class="lc loss-canvas" width="300" height="70" aria-label="Loss curve"></canvas>
+        <div class="stat-strip">
+          <div class="stat">epoch <b class="ep">0</b></div>
+          <div class="stat">loss <b class="lo">—</b></div>
+          <div class="stat">acc <b class="acs">—</b></div>
+        </div>
+      </div>
+      <div class="mirror-code mc"></div>
+    </div>
+  </div></div>`;
+  const bc=$('.bc',host),lc=$('.lc',host),ctx=bc.getContext('2d'),lctx=lc.getContext('2d');
+  const S={data:makeData('spiral'),net:null,epoch:0,playing:false,losses:[]};
+  const getH=()=>+$('.hu',host).value, getAct=()=>$('.ac',host).value, getLR=()=>Math.pow(10,+$('.lr',host).value);
+  function mirror(){
+    const h=getH(),act=getAct(),lr=getLR();
+    const actName=act==='relu'?'nn.ReLU()':'nn.Tanh()';
+    $('.mc',host).innerHTML=codeCard(
+`import torch, torch.nn as nn
+
+model = nn.Sequential(
+    nn.Linear(2, ${h}),
+    ${actName},
+    nn.Linear(${h}, ${h}),
+    ${actName},
+    nn.Linear(${h}, 1),        # logits, no sigmoid here
+)
+loss_fn   = nn.BCEWithLogitsLoss()   # sigmoid fused inside
+optimizer = torch.optim.SGD(model.parameters(), lr=${lr.toFixed(4)})
+
+for epoch in range(2000):
+    logits = model(X)                # X: [${S.data.length}, 2]
+    loss   = loss_fn(logits, y)      # y: [${S.data.length}, 1]
+    optimizer.zero_grad()
+    loss.backward()                  # what this page just did
+    optimizer.step()`,'your_settings.py');
+  }
+  function reset(){
+    S.net=new MLP(getH(),getAct()); S.epoch=0; S.losses=[];
+    $('.hv',host).textContent='('+getH()+')';
+    $('.lv',host).textContent='('+getLR().toFixed(3)+')';
+    mirror(); drawAll(true);
+    $('.ep',host).textContent=0; $('.lo',host).textContent='—'; $('.acs',host).textContent='—';
+  }
+  const toPx=v=>(v+1.15)/2.3*300;
+  function drawBoundary(){
+    const img=ctx.createImageData(60,60);
+    for(let iy=0;iy<60;iy++)for(let ix=0;ix<60;ix++){
+      const x=ix/60*2.3-1.15, y=1.15-iy/60*2.3;
+      const p=S.net.forward(x,y,null);
+      const i=(iy*60+ix)*4;
+      // blend blue(0) → white → ember(1)
+      const t=p;
+      img.data[i]  = t<0.5 ? 225-(0.5-t)*2*(225-165) : 225+(t-0.5)*2*(251-225);
+      img.data[i+1]= t<0.5 ? 233-(0.5-t)*2*(233-190) : 233-(t-0.5)*2*(233-198);
+      img.data[i+2]= t<0.5 ? 251 : 251-(t-0.5)*2*(251-186);
+      img.data[i+3]=255;
+    }
+    const tmp=document.createElement('canvas');tmp.width=60;tmp.height=60;
+    tmp.getContext('2d').putImageData(img,0,0);
+    ctx.imageSmoothingEnabled=true;
+    ctx.drawImage(tmp,0,0,300,300);
+  }
+  function drawPoints(){
+    for(const [x,y,l] of S.data){
+      ctx.beginPath();ctx.arc(toPx(x),(1.15-y)/2.3*300,3.4,0,7);
+      ctx.fillStyle=l?'#EE4C2C':'#2B5FD9';ctx.fill();
+      ctx.strokeStyle='#22303C';ctx.lineWidth=1;ctx.stroke();
+    }
+  }
+  function drawLoss(){
+    lctx.clearRect(0,0,300,70);
+    lctx.strokeStyle='#D3DEE5';lctx.strokeRect(0.5,0.5,299,69);
+    if(S.losses.length<2)return;
+    const max=Math.max(...S.losses,0.75);
+    lctx.beginPath();lctx.strokeStyle='#EE4C2C';lctx.lineWidth=2;
+    S.losses.forEach((L,i)=>{
+      const x=i/(S.losses.length-1)*296+2, y=68-(L/max)*62;
+      i?lctx.lineTo(x,y):lctx.moveTo(x,y);
+    });
+    lctx.stroke();
+    lctx.fillStyle='#5C6B77';lctx.font='10px IBM Plex Mono';
+    lctx.fillText('loss',6,14);
+  }
+  function drawAll(){drawBoundary();drawPoints();drawLoss();}
+  function frame(){
+    if(!S.playing)return;
+    let last;
+    for(let i=0;i<6;i++){last=S.net.trainEpoch(S.data,getLR());S.epoch++;}
+    S.losses.push(last.loss); if(S.losses.length>240)S.losses.shift();
+    $('.ep',host).textContent=S.epoch;
+    $('.lo',host).textContent=last.loss.toFixed(4);
+    $('.acs',host).textContent=(last.acc*100).toFixed(1)+'%';
+    drawAll();
+    requestAnimationFrame(frame);
+  }
+  $('.play',host).addEventListener('click',e=>{
+    S.playing=!S.playing;
+    e.target.textContent=S.playing?'❚❚ pause':'▶ train';
+    if(S.playing)requestAnimationFrame(frame);
+  });
+  $('.rst',host).addEventListener('click',reset);
+  $('.ds',host).addEventListener('change',e=>{S.data=makeData(e.target.value);reset();});
+  $('.hu',host).addEventListener('input',reset);
+  $('.ac',host).addEventListener('change',reset);
+  $('.lr',host).addEventListener('input',()=>{$('.lv',host).textContent='('+getLR().toFixed(3)+')';mirror();});
+  reset();
+}
+
+/* =====================================================
+   LAB 4 — Convolution, one stride at a time
+   ===================================================== */
+const CONV_PATTERNS={
+  cross:  (i,j)=>(i===4||i===5||j===4||j===5)?1:0,
+  diagonal:(i,j)=>Math.abs(i-j)<=1?1:0,
+  square: (i,j)=>(i>=2&&i<=7&&j>=2&&j<=7&&(i===2||i===7||j===2||j===7))?1:0,
+  blob:   (i,j)=>{const d=Math.hypot(i-4.5,j-4.5);return d<3?1-d/3.4:0;}
+};
+const KERNELS={
+  'sobel-x':  {k:[-1,0,1,-2,0,2,-1,0,1],why:'lights up where brightness changes left→right: vertical edges.'},
+  'sobel-y':  {k:[-1,-2,-1,0,0,0,1,2,1],why:'lights up where brightness changes top→bottom: horizontal edges.'},
+  'blur':     {k:[1/9,1/9,1/9,1/9,1/9,1/9,1/9,1/9,1/9],why:'averages the neighbourhood — high frequencies die.'},
+  'sharpen':  {k:[0,-1,0,-1,5,-1,0,-1,0],why:'amplifies the centre against its neighbours — edges pop.'},
+};
+function mountConvLab(host){
+  host.innerHTML=`
+  <div class="lab"><div class="lab-bar"><span class="lab-flame">▲</span><b>Lab · One Stride at a Time</b><span>conv2d</span></div>
+  <div class="lab-body">
+    <p class="lab-note">A 3×3 kernel slides across a 10×10 input (stride 1, no padding → 8×8 output). Each output pixel is one multiply-accumulate of the highlighted window. This is all <span class="mono">nn.Conv2d</span> does — except the kernel values are <strong>learned</strong>.</p>
+    <div class="ctrl-row">
+      <div class="ctrl"><label>input</label><select class="pt"><option>cross</option><option>diagonal</option><option>square</option><option>blob</option></select></div>
+      <div class="ctrl"><label>kernel</label><select class="kn"><option>sobel-x</option><option>sobel-y</option><option>blur</option><option>sharpen</option></select></div>
+      <button class="btn ember run">▶ slide</button>
+      <button class="btn ghost stepb">step</button>
+    </div>
+    <div class="conv-wrap">
+      <div><div class="pix-grid ig" style="grid-template-columns:repeat(10,22px)"></div><div class="sg-label">input 10×10</div></div>
+      <div><div class="kern-grid kg"></div><div class="sg-label">kernel 3×3</div><div class="conv-sum cs"></div></div>
+      <div><div class="pix-grid og" style="grid-template-columns:repeat(8,22px)"></div><div class="sg-label">output 8×8</div></div>
+    </div>
+    <div class="readout kwhy" style="margin-top:14px"></div>
+  </div></div>`;
+  const ig=$('.ig',host),og=$('.og',host),kg=$('.kg',host);
+  let input=[],out=[],pos=-1,timer=null;
+  const gray=v=>{const c=Math.round(240-Math.min(1,Math.max(0,v))*205);return `rgb(${c},${c+4},${c+8})`;};
+  const diverge=v=>{ // negative blue, positive ember
+    const t=Math.max(-1,Math.min(1,v/4));
+    return t>=0?`rgba(238,76,44,${Math.abs(t)})`:`rgba(43,95,217,${Math.abs(t)})`;
+  };
+  function build(){
+    clearInterval(timer);pos=-1;
+    const pat=CONV_PATTERNS[$('.pt',host).value];
+    input=[];for(let i=0;i<10;i++)for(let j=0;j<10;j++)input.push(pat(i,j));
+    ig.innerHTML=input.map(v=>`<i style="background:${gray(v)}"></i>`).join('');
+    const K=KERNELS[$('.kn',host).value];
+    kg.innerHTML=K.k.map(v=>`<i>${(+v.toFixed(2)).toString().replace('0.','.')}</i>`).join('');
+    out=new Array(64).fill(null);
+    og.innerHTML=out.map(()=>'<i style="background:#fff"></i>').join('');
+    $('.kwhy',host).innerHTML=`<b>${$('.kn',host).value}</b> — ${K.why}`;
+    $('.cs',host).textContent='';
+  }
+  function step(){
+    pos++;
+    if(pos>=64){clearInterval(timer);timer=null;$('.run',host).textContent='▶ slide';highlight(-1);return;}
+    const r=Math.floor(pos/8),c=pos%8;
+    const K=KERNELS[$('.kn',host).value].k;
+    let s=0,terms=[];
+    for(let i=0;i<3;i++)for(let j=0;j<3;j++){
+      const v=input[(r+i)*10+(c+j)];s+=v*K[i*3+j];
+    }
+    out[pos]=s;
+    og.children[pos].style.background=diverge(s);
+    $('.cs',host).textContent=`out[${r},${c}] = Σ window⊙kernel = ${fmt(s,2)}`;
+    highlight(pos);
+  }
+  function highlight(p){
+    $$('.ig i',host).forEach(i=>i.classList.remove('hot'));
+    $$('.og i',host).forEach(i=>i.classList.remove('hot'));
+    if(p<0)return;
+    const r=Math.floor(p/8),c=p%8;
+    for(let i=0;i<3;i++)for(let j=0;j<3;j++)ig.children[(r+i)*10+(c+j)].classList.add('hot');
+    og.children[p].classList.add('hot');
+  }
+  $('.run',host).addEventListener('click',e=>{
+    if(timer){clearInterval(timer);timer=null;e.target.textContent='▶ slide';return;}
+    if(pos>=63)build();
+    e.target.textContent='❚❚ pause';
+    timer=setInterval(step,90);
+  });
+  $('.stepb',host).addEventListener('click',()=>{if(timer){clearInterval(timer);timer=null;$('.run',host).textContent='▶ slide';}if(pos>=63)build();step();});
+  $('.pt',host).addEventListener('change',build);
+  $('.kn',host).addEventListener('change',build);
+  build();
+}
+
+/* =====================================================
+   LAB 5 — Attention, head by head
+   ===================================================== */
+function mountAttnLab(host){
+  const TOK=['The','robot','drank','the','battery','because','it','was','empty'];
+  // hand-crafted, row-normalised attention (what a trained model plausibly learns)
+  const HEADS={
+    'head 1 · local syntax':[
+      [.55,.25,.08,.04,.03,.02,.01,.01,.01],
+      [.30,.40,.20,.04,.03,.01,.01,.005,.005],
+      [.05,.45,.30,.10,.06,.02,.01,.005,.005],
+      [.03,.05,.25,.40,.22,.03,.01,.005,.005],
+      [.02,.06,.12,.35,.38,.04,.02,.005,.005],
+      [.01,.03,.10,.05,.25,.40,.12,.03,.01],
+      [.01,.03,.05,.03,.12,.30,.35,.08,.03],
+      [.01,.02,.04,.02,.06,.10,.35,.30,.10],
+      [.01,.02,.05,.02,.08,.08,.20,.24,.30],
+    ],
+    'head 2 · coreference':[
+      [.50,.20,.05,.10,.08,.03,.02,.01,.01],
+      [.10,.55,.10,.05,.12,.03,.03,.01,.01],
+      [.03,.30,.40,.05,.15,.03,.02,.01,.01],
+      [.05,.05,.05,.45,.32,.04,.02,.01,.01],
+      [.02,.15,.10,.10,.50,.05,.05,.02,.01],
+      [.02,.05,.15,.03,.20,.40,.10,.03,.02],
+      [.01,.10,.03,.02,.62,.08,.10,.02,.02],   // "it" → battery!
+      [.01,.03,.03,.02,.15,.05,.30,.35,.06],
+      [.01,.05,.08,.02,.35,.05,.15,.09,.20],
+    ]
+  };
+  host.innerHTML=`
+  <div class="lab"><div class="lab-bar"><span class="lab-flame">▲</span><b>Lab · Attention, Head by Head</b><span>softmax(QKᵀ/√d)·V</span></div>
+  <div class="lab-body">
+    <p class="lab-note">Click any token to see <strong>where it looks</strong>. Every token computes a query, compares it against every key, and the softmax of those scores decides whose value vectors it blends in. Try <span class="mono">it</span> on both heads — head 2 has learned that "it" means the battery.</p>
+    <div class="ctrl-row"><div class="ctrl"><label>attention head</label><select class="hd">${Object.keys(HEADS).map(h=>`<option>${h}</option>`).join('')}</select></div></div>
+    <div class="tok-row"></div>
+    <div class="attn-bars"></div>
+    <div class="readout ar" style="margin-top:14px"></div>
+  </div></div>`;
+  const row=$('.tok-row',host),bars=$('.attn-bars',host);
+  let sel=6;
+  row.innerHTML=TOK.map((t,i)=>`<button class="tok" data-i="${i}">${t}</button>`).join('');
+  bars.innerHTML=TOK.map((t,i)=>`<div class="abar"><div class="bar" data-i="${i}" style="height:2px"></div><span class="bl">${t}</span></div>`).join('');
+  function draw(){
+    const A=HEADS[$('.hd',host).value][sel];
+    $$('.tok',row).forEach((b,i)=>{
+      b.classList.toggle('sel',i===sel);
+      if(i!==sel){b.style.background=`rgba(238,76,44,${A[i]*0.9})`;b.style.color=A[i]>0.45?'#fff':'';}
+      else{b.style.background='';b.style.color='';}
+    });
+    $$('.bar',bars).forEach((b,i)=>b.style.height=(A[i]*100+2)+'px');
+    const top=A.map((v,i)=>[v,i]).sort((a,b)=>b[0]-a[0]).filter(([,i])=>i!==sel)[0];
+    $('.ar',host).innerHTML=`query = <b>"${TOK[sel]}"</b> → strongest key: <b>"${TOK[top[1]]}"</b> (weight ${fmt(top[0],2)}). Its output vector is mostly a blend of the values it attends to.`;
+  }
+  row.addEventListener('click',e=>{const t=e.target.closest('.tok');if(!t)return;sel=+t.dataset.i;draw();});
+  $('.hd',host).addEventListener('change',draw);
+  draw();
+}
+
+const WIDGETS={tensor:mountTensorLab,tape:h=>mountTapeLab(h),train:mountArena,conv:mountConvLab,attn:mountAttnLab};
+
+/* =====================================================
+   CURRICULUM — Act I & II (chapters 1–9)
+   ===================================================== */
+const CH=[
+
+/* ---------- 01 TENSORS ---------- */
+{id:'tensors',n:'01',g:'Act I · Foundations',t:'Tensors',read:'10 min',
+sub:'Everything in PyTorch is a tensor: your data, your weights, your gradients. Master shape, dtype and device and half of your future bugs evaporate.',
+body:[
+{h:'Start here: the tensor ladder',
+p:`<p>Before the passports, the picture. A <strong>tensor</strong> is simply a container for numbers arranged on a grid with a fixed number of directions, called <strong>axes</strong> (or dimensions). Climb the ladder one rung at a time:</p>
+<ul>
+<li><strong>0-D — scalar:</strong> a single number. A loss value, a temperature — <code>7.0</code>.</li>
+<li><strong>1-D — vector:</strong> a row of numbers. Audio samples, or a word embedding.</li>
+<li><strong>2-D — matrix:</strong> a table with rows and columns. A grayscale image, or a spreadsheet.</li>
+<li><strong>3-D:</strong> a stack of tables. An RGB image is three colour planes — <code>(channels, height, width)</code>.</li>
+<li><strong>4-D:</strong> a stack of those. A <em>batch</em> of 32 RGB images — <code>(32, 3, 64, 64)</code>.</li>
+</ul>
+<p>Two words describe any tensor: its <strong>rank</strong> (<code>ndim</code>) — how many axes it has — and its <strong>shape</strong> — how long each axis is. An easy way to feel it: a spreadsheet is 2-D, twelve monthly spreadsheets stacked together are 3-D, and a filing cabinet of yearly folders is 4-D.</p>`,
+code:`import torch
+
+scalar = torch.tensor(7.0)            # 0-D: just a number      shape ()
+vector = torch.tensor([1., 2., 3.])   # 1-D: a list             shape (3,)
+matrix = torch.tensor([[1., 2.],
+                       [3., 4.]])      # 2-D: a table            shape (2, 2)
+image  = torch.randn(3, 64, 64)       # 3-D: RGB image (C,H,W)  shape (3, 64, 64)
+batch  = torch.randn(32, 3, 64, 64)   # 4-D: 32 such images     shape (32, 3, 64, 64)
+
+print(scalar.ndim, vector.ndim, matrix.ndim)   # 0 1 2
+print(batch.shape)                             # torch.Size([32, 3, 64, 64])`,
+cap:'ndim = number of axes (the "rank"); shape = the length of each axis. Nail these two and the rest is detail.'},
+{h:'A tensor is a typed, shaped, placed array',
+p:`<p>A <code>torch.Tensor</code> is an n-dimensional array with three passports it carries everywhere: a <strong>shape</strong> (how the numbers are arranged), a <strong>dtype</strong> (how each number is stored), and a <strong>device</strong> (which chip the memory lives on). Ninety percent of real-world PyTorch errors are one of these three passports not matching.</p>`,
+code:`import torch
+
+# creation — memorise these six
+a = torch.tensor([[1., 2.], [3., 4.]])   # from data (copies!)
+b = torch.zeros(2, 3)                    # shape (2,3) of 0.0
+c = torch.ones(5)                        # shape (5,)
+d = torch.randn(3, 4)                    # ~ Normal(0, 1)
+e = torch.arange(0, 10, 2)               # [0, 2, 4, 6, 8]
+f = torch.linspace(0, 1, steps=5)        # 5 evenly spaced points
+
+print(a.shape, a.dtype, a.device)        # torch.Size([2, 2]) torch.float32 cpu
+print(d.ndim, d.numel())                 # 2, 12`,
+cap:'torch.tensor() infers dtype from the data: floats → float32, ints → int64.'},
+{h:'dtype: the silent killer',
+p:`<p>Deep learning defaults to <code>float32</code>. Class labels must be <code>int64</code> (long) for <code>CrossEntropyLoss</code>. Mixed-precision training adds <code>float16</code>/<code>bfloat16</code>. Mixing them silently upcasts — or loudly crashes.</p>
+<div class="gotcha"><span class="g-tag">gotcha</span><p><code>torch.tensor([1,2,3])</code> gives you <strong>int64</strong>. Feed that into a linear layer and you get <em>"expected scalar type Float but found Long"</em>. Write <code>torch.tensor([1.,2.,3.])</code> or pass <code>dtype=torch.float32</code>.</p></div>`,
+code:`x = torch.tensor([1, 2, 3])          # int64  — labels, indices
+x = x.to(torch.float32)               # convert (returns NEW tensor)
+x = x.float()                         # same thing, shorthand
+
+# device moves use the same .to()
+device = "cuda" if torch.cuda.is_available() else "cpu"
+x = x.to(device)                      # tensors don't move in place`,
+cap:'.to() returns a new tensor — reassign it. Models move in place, tensors do not.'},
+{h:'Views, reshapes and the memory underneath',
+p:`<p>A tensor is a <em>view</em> over a flat 1-D buffer plus <strong>strides</strong> — how many buffer steps to jump per dimension. <code>view()</code>, <code>transpose()</code>, slicing and <code>permute()</code> create new tensors that <strong>share the same memory</strong>. Cheap, instant, and a classic source of spooky action at a distance.</p>`,
+code:`x = torch.arange(12)          # [0..11], one flat buffer
+m = x.view(3, 4)              # same memory, new strides
+m[0, 0] = 99                  # !!
+print(x[0])                   # tensor(99) — x changed too
+
+t = m.t()                     # transpose: still same memory
+# t.view(-1)                  # RuntimeError: not contiguous
+t = t.contiguous().view(-1)   # copy into fresh layout, then view
+r = m.reshape(2, 6)           # reshape = view if possible, else copy`,
+cap:'Rule of thumb: use .reshape() unless you specifically need the no-copy guarantee of .view().'},
+{h:'Indexing like you mean it',
+p:`<p>PyTorch indexing is NumPy indexing: slices, boolean masks, and integer-array (fancy) indexing. Masks and fancy indexing <strong>copy</strong>; slices <strong>view</strong>.</p>`,
+code:`x = torch.randn(4, 5)
+x[0]            # first row              → shape (5,)
+x[:, 1]         # second column          → shape (4,)
+x[1:3, ::2]     # rows 1–2, every 2nd col (view)
+x[x > 0]        # boolean mask           → 1-D copy
+x[[0, 2, 3]]    # fancy index rows       → copy
+
+# the unsqueeze/squeeze dance you will do daily
+v = torch.randn(5)
+v.unsqueeze(0).shape   # (1, 5)  — add batch dim
+v.unsqueeze(1).shape   # (5, 1)  — make it a column
+v[None, :, None].shape # (1, 5, 1) — same idea, NumPy style`},
+{h:'Broadcasting: the rule you must be able to recite',
+p:`<p>When shapes differ, PyTorch aligns them <strong>from the right</strong>. Each dimension pair must be equal, or one must be 1 (it stretches virtually — stride 0, no copy). Try to break it below.</p>`},
+],
+widget:'tensor',
+after:[
+{h:'NumPy interop & the GPU',
+p:`<p><code>torch.from_numpy(arr)</code> and <code>tensor.numpy()</code> <strong>share memory</strong> on CPU — mutate one, you mutate the other. A tensor on CUDA must come home first: <code>t.detach().cpu().numpy()</code>. That one-liner is the airport security of PyTorch; you will type it a thousand times.</p>
+<div class="whybox"><span class="g-tag">why it matters</span><p>GPU speedups come from <em>keeping</em> data on the device. The cardinal sin is ping-ponging tensors between CPU and GPU inside your training loop — profile it and you'll see transfers eating your epoch time.</p></div>`,
+code:`import numpy as np
+arr = np.ones(3)
+t   = torch.from_numpy(arr)   # zero-copy bridge
+t += 1
+print(arr)                    # [2. 2. 2.]  — shared!
+
+g = t.to("cuda")              # now a copy on the GPU
+out = (g @ g.T).detach().cpu().numpy()   # the ritual`},
+{h:'One blog to bookmark',
+p:`<p>When you want to see what actually lives under a tensor — storage, strides, views, dtypes and devices, all in one place — there is one blog post worth reading end to end.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p><a href="http://blog.ezyang.com/2019/05/pytorch-internals/" target="_blank" rel="noopener">“PyTorch internals” by Edward Z. Yang</a> is the clearest tour of how a tensor is really built: the flat storage buffer, the strides that turn it into an n-D view, and why <code>view()</code> is free but <code>reshape()</code> sometimes copies. Read it once and the "Views, reshapes and the memory underneath" section above clicks permanently.</p></div>`}],
+quiz:[
+{q:'torch.tensor([1, 2, 3]) has which dtype?',o:['float32','int64','int32','float64'],a:1,why:'Python ints infer int64 (long). Floats would infer float32.'},
+{q:'x.view(3, 4) then x[0,0]=99 — what happens to the original tensor?',o:['Nothing, view() copies','It also changes — views share memory','RuntimeError','Only its strides change'],a:1,why:'view() returns a new tensor over the same buffer. Writes are visible through every view.'},
+{q:'Shapes (8, 1, 6, 1) and (7, 1, 5) broadcast to…',o:['(8, 7, 6, 5)','(8, 1, 6, 5)','Error at dim 0','(56, 6, 5)'],a:0,why:'Align right: (6,1)×(1,5)→(6,5); (1)×(7)→7; leading 8 stands alone. Result (8,7,6,5).'},
+{q:'Correct way to get a NumPy array from a CUDA tensor that requires grad:',o:['t.numpy()','t.cpu().numpy() only','t.detach().cpu().numpy()','np.array(t)'],a:2,why:'detach() leaves the autograd graph, cpu() leaves the device, then numpy() bridges.'}]},
+
+/* ---------- 02 NEURAL NETWORK FUNDAMENTALS ---------- */
+{id:'nn',n:'02',g:'Act I · Foundations',t:'Neural Network Fundamentals',read:'9 min',
+sub:'nn.Module is the one class to rule them all. Learn its contract and every architecture — from a perceptron to a 405B-parameter LLM — reads the same way.',
+body:[
+{h:'Start here: what a "module" really is',
+p:`<p>A neural network is just a function that turns input numbers into output numbers, with a lot of tunable knobs (parameters) in between. In PyTorch, every piece of that function — a single layer, a block, or the whole model — is packaged as an <code>nn.Module</code>. Think of it as a LEGO brick: it knows its own parameters and how to transform its input, and bricks snap together into bigger bricks.</p>
+<ul>
+<li><strong>parameter:</strong> a number the optimizer is allowed to tune (a weight or a bias).</li>
+<li><strong>layer:</strong> a small, reusable transform, e.g. <code>nn.Linear</code>.</li>
+<li><strong>forward pass:</strong> running an input through the module to get an output.</li>
+</ul>`,
+code:`import torch
+import torch.nn as nn
+
+# the smallest possible model: y = xWᵀ + b
+layer = nn.Linear(in_features=3, out_features=1)
+
+x = torch.randn(4, 3)     # a batch of 4 examples, 3 features each
+y = layer(x)              # call it like a function -> runs forward()
+print(y.shape)            # torch.Size([4, 1])
+print(sum(p.numel() for p in layer.parameters()))  # 4 -> weights(3) + bias(1)`,
+cap:'You never write layer.forward(x); you call layer(x) and PyTorch runs forward() for you (plus any hooks).'},
+{h:'The nn.Module contract',
+p:`<p>Every model, layer, block and loss in PyTorch is an <code>nn.Module</code>. The contract is two methods: <strong><code>__init__</code></strong> declares your parameters and sub-modules (declaring them as attributes is what <em>registers</em> them), and <strong><code>forward</code></strong> defines the computation. You never call <code>forward()</code> yourself — you call the module, and <code>__call__</code> runs hooks around your forward.</p>`,
+code:`import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class MLP(nn.Module):
+    def __init__(self, d_in=784, d_hidden=256, d_out=10):
+        super().__init__()                    # never forget this line
+        self.fc1 = nn.Linear(d_in, d_hidden)  # registers weight & bias
+        self.fc2 = nn.Linear(d_hidden, d_out)
+        self.dropout = nn.Dropout(p=0.2)
+
+    def forward(self, x):
+        x = x.flatten(1)          # (B, 1, 28, 28) → (B, 784)
+        x = F.relu(self.fc1(x))
+        x = self.dropout(x)
+        return self.fc2(x)        # raw logits — no softmax!
+
+model = MLP()
+print(sum(p.numel() for p in model.parameters()))  # 203,530`,
+cap:'Return logits. CrossEntropyLoss applies log-softmax internally; adding your own softmax is a classic silent bug.'},
+{h:'Parameters vs. buffers vs. plain attributes',
+p:`<p>An <code>nn.Parameter</code> is a tensor that shows up in <code>model.parameters()</code> — the optimizer will train it. A <strong>buffer</strong> (<code>register_buffer</code>) travels with the model — it's saved in the state_dict and moves with <code>.to(device)</code> — but receives no gradients. BatchNorm's running mean is a buffer. A plain Python attribute tensor is invisible to both, which is almost always a bug.</p>`,
+code:`class Scaler(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.gain = nn.Parameter(torch.ones(1))          # learned
+        self.register_buffer("running_max", torch.zeros(1))  # tracked, not learned
+
+    def forward(self, x):
+        if self.training:
+            self.running_max = torch.maximum(self.running_max, x.abs().max())
+        return x * self.gain`},
+{h:'Activations: why depth needs nonlinearity',
+p:`<p>Stack ten <code>nn.Linear</code> layers with nothing between them and you have built… one linear layer, expensively. Nonlinear activations are what let depth create new functions. Modern defaults: <strong>ReLU</strong> for speed and sparsity, <strong>GELU</strong> in transformers, <strong>tanh</strong> for small nets and RNN gates, <strong>SiLU/Swish</strong> in modern convnets.</p>
+<div class="gotcha"><span class="g-tag">gotcha</span><p><code>model.train()</code> and <code>model.eval()</code> do not train or evaluate anything. They flip a boolean that changes the behaviour of Dropout and BatchNorm. Forgetting <code>model.eval()</code> at inference means dropout keeps firing — your predictions become a slot machine.</p></div>`,
+code:`model.train()   # dropout active, batchnorm uses batch stats
+model.eval()    # dropout off,   batchnorm uses running stats
+
+with torch.no_grad():          # also stop building the autograd graph
+    preds = model(x_test).argmax(dim=1)`},
+{h:'Train one live, right here',
+p:`<p>Below is a real 2-layer MLP training in your browser via gradient descent — the same algorithm, minus the CUDA. Watch the decision boundary bend. Then break it: set the learning rate to 5 on the spiral and enjoy the fireworks.</p>`},
+],
+widget:'train',
+after:[
+{h:'One blog to bookmark',
+p:`<p>To really feel how modules, parameters and layers fit together, it helps to have built one from scratch once.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p>Andrej Karpathy's <a href="https://karpathy.ai/zero-to-hero.html" target="_blank" rel="noopener">"Neural Networks: Zero to Hero"</a> builds autograd and neural nets up from a single scalar, in code, line by line. Nothing makes <code>nn.Module</code> feel obvious faster than having written its guts yourself.</p></div>`}],
+quiz:[
+{q:'Why must layers be assigned in __init__ as self.xxx?',o:['Purely style','Assignment registers their parameters with the module','forward() cannot see locals','It enables JIT'],a:1,why:'nn.Module.__setattr__ intercepts assignment and registers parameters/submodules so optimizers and .to(device) can find them.'},
+{q:'Your classifier ends with nn.Softmax and you use CrossEntropyLoss. Result?',o:['Perfect, that is required','Double softmax → tiny gradients, poor training','RuntimeError','Only affects inference'],a:1,why:'CrossEntropyLoss = LogSoftmax + NLLLoss. Softmaxing twice squashes logits and starves gradients. Return raw logits.'},
+{q:'10 stacked Linear layers with no activations equal…',o:['A 10× deeper hypothesis space','One linear transformation','A universal approximator','An RNN'],a:1,why:'Composition of linear maps is linear: W₁₀…W₂W₁x is just Wx.'},
+{q:'BatchNorm running statistics are stored as…',o:['nn.Parameter','buffers via register_buffer','plain attributes','optimizer state'],a:1,why:'They must persist in the state_dict and move across devices, but must not receive gradients — exactly what buffers are for.'}]},
+
+/* ---------- 03 AUTOGRAD ---------- */
+{id:'autograd',n:'03',g:'Act I · Foundations',t:'Automatic Differentiation',read:'11 min',
+sub:'PyTorch records every operation on a tape as you run it, then plays the tape backwards. This chapter is the soul of the framework.',
+body:[
+{h:'Start here: gradients, in one breath',
+p:`<p>A gradient answers one question: "if I nudge this knob a tiny bit, how much does my error change, and in which direction?" <strong>Autograd</strong> is PyTorch computing all of those answers for you, automatically, for every parameter at once.</p>
+<ul>
+<li><strong>gradient / derivative:</strong> the rate of change — the slope.</li>
+<li><strong>requires_grad:</strong> marks a tensor as a knob whose gradient should be tracked.</li>
+<li><strong>.backward():</strong> compute the gradients.</li>
+<li><strong>.grad:</strong> where each answer is stored afterwards.</li>
+</ul>
+<p>Analogy: you are hiking downhill in thick fog. The gradient is the slope you feel under your feet — it tells you which way is down, so you can step toward lower error.</p>`,
+code:`import torch
+
+x = torch.tensor(3.0, requires_grad=True)   # a knob we want to tune
+y = x ** 2                                   # y = x²
+
+y.backward()          # compute dy/dx and store it
+print(x.grad)         # tensor(6.)  -> because dy/dx = 2x = 2·3`,
+cap:'The slope of x² at x=3 is 2·3 = 6. Autograd just did the calculus so you never have to.'},
+{h:'Define-by-run',
+p:`<p>Every operation on a tensor with <code>requires_grad=True</code> appends a node to a <strong>dynamic graph</strong> — built fresh on every forward pass, which is why Python <code>if</code>s and loops just work. Calling <code>.backward()</code> on a scalar walks the graph in reverse topological order, applying the chain rule at each node, and <em>accumulates</em> results into each leaf's <code>.grad</code>.</p>`,
+code:`import torch
+
+w = torch.tensor(-1.0, requires_grad=True)
+b = torch.tensor(0.5,  requires_grad=True)
+x, t = torch.tensor(2.0), torch.tensor(6.0)
+
+loss = (w * x + b - t) ** 2      # graph built HERE, op by op
+loss.backward()                  # tape replayed in reverse
+
+print(w.grad)   # ∂loss/∂w = 2(wx+b−t)·x = -30.0
+print(b.grad)   # ∂loss/∂b = 2(wx+b−t)   = -15.0`,
+cap:'This exact graph is the lab below. The numbers will match.'},
+{h:'Play the tape yourself',
+p:`<p>This is the live version of the code above. Slide, backward, step — you are performing gradient descent on a one-neuron network by hand.</p>`},
+],
+widget:'tape',
+after:[
+{h:'The three rules of .grad',
+p:`<p><strong>1. Gradients accumulate.</strong> <code>backward()</code> adds into <code>.grad</code>; it does not overwrite. That's a feature (gradient accumulation for big effective batches) but it means you must call <code>optimizer.zero_grad()</code> every step. <strong>2. Only leaves keep grads.</strong> Intermediate tensors free theirs to save memory (use <code>.retain_grad()</code> if you need them). <strong>3. The graph is consumed.</strong> After <code>backward()</code>, buffers are freed; a second backward through the same graph raises unless you passed <code>retain_graph=True</code>.</p>
+<div class="gotcha"><span class="g-tag">gotcha</span><p>The single most common beginner bug in all of PyTorch: forgetting <code>zero_grad()</code>. Your gradients snowball across steps, the loss goes to the moon, and nothing errors. If training "mysteriously diverges", check this first.</p></div>`,
+code:`for x, y in loader:
+    optimizer.zero_grad()        # rule 1: or grads accumulate forever
+    loss = loss_fn(model(x), y)
+    loss.backward()
+    optimizer.step()
+
+# stopping gradient flow, three ways
+with torch.no_grad():            # block: no graph built at all
+    ema_param.mul_(0.99).add_(param, alpha=0.01)
+
+frozen = feats.detach()          # tensor: cut from the graph
+model.head.weight.requires_grad_(False)   # parameter: freeze`},
+{h:'Under the hood: grad_fn and custom Functions',
+p:`<p>Each non-leaf tensor points to the <code>grad_fn</code> that created it (<code>MulBackward0</code>, <code>AddBackward0</code>…) — chase <code>.grad_fn.next_functions</code> and you can walk the whole tape. When you need a derivative PyTorch can't derive (a non-differentiable op, a fused kernel, a straight-through estimator), subclass <code>torch.autograd.Function</code>:</p>`,
+code:`class ClampSTE(torch.autograd.Function):
+    """Straight-through estimator: clamp forward, identity backward."""
+    @staticmethod
+    def forward(ctx, x):
+        return x.clamp(-1, 1)
+
+    @staticmethod
+    def backward(ctx, grad_out):
+        return grad_out            # pretend clamp was identity
+
+y = ClampSTE.apply(x)              # used like any op`,
+cap:'STEs are how quantization-aware training backpropagates through rounding.'},
+{h:'One blog to bookmark',
+p:`<p>The chain rule is easy to trust and easy to misuse; seeing where it silently breaks makes you a far better debugger.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p>Andrej Karpathy's <a href="https://karpathy.medium.com/yes-you-should-understand-backprop-e2f06eab496b" target="_blank" rel="noopener">"Yes you should understand backprop"</a> shows why knowing what autograd actually does — vanishing gradients, dead ReLUs, saturated sigmoids — saves you from bugs that no error message will ever explain.</p></div>`}],
+quiz:[
+{q:'You call loss.backward() twice per step without zero_grad(). The effective gradient is…',o:['The latest gradient','The sum of both backwards','An error, always','Halved'],a:1,why:'.grad accumulates by design. Without zeroing, steps use stale + fresh gradients summed.'},
+{q:'In the lab above with x=2: if the error e = wx+b−t, then ∂L/∂w equals…',o:['2e','2e·x','e²','x'],a:1,why:'L=e², so dL/de=2e, and de/dw=x. Chain rule: 2e·x. The tape shows exactly this.'},
+{q:'tensor.detach() gives you…',o:['A copy on CPU','The same data, severed from the graph','A frozen parameter','A NumPy array'],a:1,why:'Same storage, but requires_grad=False and no grad_fn — gradients stop there.'},
+{q:'Why are dynamic graphs great for research?',o:['They are always faster','Control flow (if/for) can depend on data, per forward pass','They use less memory','They compile to C++'],a:1,why:'The graph is rebuilt each run, so data-dependent branching, recursion and variable-length loops are natural Python.'}]},
+
+/* ---------- 04 TRAINING ---------- */
+{id:'training',n:'04',g:'Act I · Foundations',t:'The Training Loop',read:'10 min',
+sub:'Five lines you will write for the rest of your life — and the losses, optimizers, schedulers and sanity checks that orbit them.',
+body:[
+{h:'Start here: what "training" actually means',
+p:`<p>Training is repeating four moves until the model stops making mistakes: <strong>guess</strong>, <strong>measure how wrong</strong>, <strong>figure out which way to adjust</strong>, <strong>adjust a little</strong>. In code those are forward, loss, backward, step.</p>
+<ul>
+<li><strong>epoch:</strong> one full pass over the whole dataset.</li>
+<li><strong>batch:</strong> a small chunk of examples processed together.</li>
+<li><strong>loss:</strong> one number summarising "how wrong" the guess was.</li>
+<li><strong>optimizer:</strong> the thing that nudges the parameters.</li>
+<li><strong>learning rate:</strong> how big each nudge is.</li>
+</ul>
+<p>Analogy: studying for an exam — take a practice test (forward), check your score (loss), review what you got wrong (backward), study those topics (step), and repeat.</p>`,
+code:`# the four moves, stripped to the bone
+for xb, yb in loader:            # one batch at a time
+    optimizer.zero_grad()        # 1. clear last step's gradients
+    pred = model(xb)             # 2. guess (forward pass)
+    loss = loss_fn(pred, yb)     # 3. measure how wrong
+    loss.backward()              # 4a. which way to adjust each knob?
+    optimizer.step()             # 4b. take a small step`,
+cap:'zero → forward → loss → backward → step. Every training script you will ever write is this, dressed up.'},
+{h:'The canonical loop',
+p:`<p>Everything else in this course is decoration around these lines. Read them until they are boring:</p>`,
+code:`model = MLP().to(device)
+optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4, weight_decay=0.01)
+loss_fn = nn.CrossEntropyLoss()
+
+for epoch in range(epochs):
+    model.train()
+    for xb, yb in train_loader:
+        xb, yb = xb.to(device), yb.to(device)
+        optimizer.zero_grad()
+        loss = loss_fn(model(xb), yb)
+        loss.backward()
+        optimizer.step()
+
+    model.eval()
+    with torch.no_grad():
+        acc = evaluate(model, val_loader)`,
+cap:'zero → forward → loss → backward → step. Tattoo optional but recommended.'},
+{h:'Choosing a loss',
+p:`<ul>
+<li><strong>Multi-class classification</strong> → <code>nn.CrossEntropyLoss</code>. Takes raw logits <code>(B, C)</code> and integer labels <code>(B,)</code>. Not one-hot. Not probabilities.</li>
+<li><strong>Binary / multi-label</strong> → <code>nn.BCEWithLogitsLoss</code>. The <em>WithLogits</em> matters: the fused sigmoid is numerically stable where a separate <code>Sigmoid + BCELoss</code> can produce NaNs.</li>
+<li><strong>Regression</strong> → <code>nn.MSELoss</code>, or <code>nn.HuberLoss</code>/<code>SmoothL1Loss</code> when outliers exist.</li>
+</ul>
+<div class="gotcha"><span class="g-tag">gotcha</span><p>Shape mismatch + broadcasting = silently wrong loss. <code>MSELoss()(pred_of_shape_(B,1), target_of_shape_(B,))</code> broadcasts into a (B,B) matrix and averages it. PyTorch warns; people ignore warnings. Always <code>target.view_as(pred)</code>.</p></div>`},
+{h:'Optimizers: SGD vs Adam vs AdamW',
+p:`<p><strong>SGD + momentum</strong>: simple, memory-light, often the best final accuracy on vision with a tuned schedule. <strong>Adam</strong>: per-parameter adaptive learning rates; forgiving defaults, the standard for transformers and prototypes. <strong>AdamW</strong>: Adam with weight decay done correctly (decoupled from the gradient) — the modern default. Learning rate is the single highest-leverage hyperparameter you own: start at <code>3e-4</code> for Adam-family, <code>0.1</code> for SGD on vision, then bisect.</p>`,
+code:`# schedulers shape the lr over time
+sched = torch.optim.lr_scheduler.OneCycleLR(
+    optimizer, max_lr=1e-3,
+    total_steps=len(train_loader) * epochs)
+
+for xb, yb in train_loader:
+    ...
+    optimizer.step()
+    sched.step()            # per-BATCH for OneCycle / cosine-with-warmup
+
+# gradient clipping — insurance for RNNs & transformers
+torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)`},
+{h:'Checkpoints: state_dict or nothing',
+p:`<p>Save the <code>state_dict</code> (a plain dict of tensors), never the pickled model object — pickles break the moment your class definition moves. Resume-worthy checkpoints save the optimizer and scheduler too.</p>`,
+code:`torch.save({
+    "epoch": epoch,
+    "model": model.state_dict(),
+    "optim": optimizer.state_dict(),
+    "sched": sched.state_dict(),
+    "best_acc": best_acc,
+}, "ckpt.pt")
+
+ckpt = torch.load("ckpt.pt", map_location=device)
+model.load_state_dict(ckpt["model"])
+optimizer.load_state_dict(ckpt["optim"])`},
+{h:'The overfit-one-batch test',
+p:`<div class="whybox"><span class="g-tag">the pro move</span><p>Before training on the full dataset, train on <strong>one single batch</strong> until loss ≈ 0. If your model cannot memorise 32 examples, you have a bug — wrong shapes, wrong loss, frozen params, double softmax — and you just found it in 30 seconds instead of 3 GPU-hours.</p></div>`},
+],
+widget:null,after:[
+{h:'One blog to bookmark',
+p:`<p>Most training failures are not exotic — they are a handful of mistakes almost everyone makes at least once.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p>Andrej Karpathy's <a href="https://karpathy.github.io/2019/04/25/recipe/" target="_blank" rel="noopener">"A Recipe for Training Neural Networks"</a> is the field's most-shared checklist for getting a training loop to actually work — including the overfit-one-batch test from this chapter, and why you should never trust a loss you have not sanity-checked.</p></div>`}],
+quiz:[
+{q:'CrossEntropyLoss expects…',o:['softmax probabilities + one-hot','logits + integer class indices','log-probs + one-hot','logits + floats in [0,1]'],a:1,why:'It fuses log-softmax + NLL. Inputs (B,C) logits, targets (B,) int64 indices.'},
+{q:'MSE between pred (B,1) and target (B,) silently…',o:['works fine','broadcasts to (B,B) and averages garbage','casts to int','transposes target'],a:1,why:'Broadcasting aligns from the right: (B,1)−(B,) → (B,B). A warning fires; the number is wrong.'},
+{q:'AdamW differs from Adam by…',o:['Nesterov momentum','decoupled weight decay','lower memory','being deterministic'],a:1,why:'Adam entangles L2 penalty with adaptive scaling; AdamW applies decay directly to weights — better generalisation.'},
+{q:'The overfit-one-batch test verifies…',o:['generalisation','that the pipeline can learn at all','GPU speed','data quality'],a:1,why:'If a net cannot memorise one batch, the plumbing (shapes, loss, grads) is broken. Cheapest bug detector known.'}]},
+
+/* ---------- 05 DATA ---------- */
+{id:'data',n:'05',g:'Act I · Foundations',t:'Data Loading & Preprocessing',read:'8 min',
+sub:'Dataset says what an example is; DataLoader turns examples into shuffled, batched, parallel-loaded tensors. GPUs starve without this chapter.',
+body:[
+{h:'Start here: feeding the machine',
+p:`<p>Models learn from examples, but they want those examples as neat, shuffled, batched tensors — not as loose files on disk. Two objects handle this: a <strong>Dataset</strong> knows how to fetch <em>one</em> example, and a <strong>DataLoader</strong> turns many examples into shuffled batches, loading them in the background so the GPU never waits.</p>
+<ul>
+<li><strong>sample / example:</strong> one input paired with its label.</li>
+<li><strong>batch:</strong> a stack of samples processed together.</li>
+<li><strong>shuffle:</strong> randomise the order every epoch so the model does not memorise sequence.</li>
+<li><strong>transform:</strong> preprocessing applied to a sample (resize, normalise, augment).</li>
+</ul>
+<p>Analogy: the Dataset is the recipe for a single plate; the DataLoader is the kitchen line plating many at once and handing them out in a steady stream.</p>`,
+code:`from torch.utils.data import Dataset, DataLoader
+
+class Squares(Dataset):
+    def __len__(self):            # how many examples exist
+        return 100
+    def __getitem__(self, i):     # how to fetch example i
+        x = torch.tensor([i * 1.0])
+        return x, x ** 2          # (input, label)
+
+loader = DataLoader(Squares(), batch_size=8, shuffle=True)
+xb, yb = next(iter(loader))
+print(xb.shape)     # torch.Size([8, 1]) -> a batch of 8, ready for the model`,
+cap:'__len__ + __getitem__ is the entire Dataset contract; the DataLoader adds batching, shuffling and parallel loading.'},
+{h:'The Dataset contract',
+p:`<p>A map-style <code>Dataset</code> implements <code>__len__</code> and <code>__getitem__</code>. That's the whole interface. Do your heavy transforms lazily inside <code>__getitem__</code> so worker processes parallelise them.</p>`,
+code:`from torch.utils.data import Dataset, DataLoader
+
+class CsvDataset(Dataset):
+    def __init__(self, df, transform=None):
+        self.X = torch.tensor(df.drop(columns="label").values, dtype=torch.float32)
+        self.y = torch.tensor(df["label"].values, dtype=torch.long)
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.y)
+
+    def __getitem__(self, i):
+        x = self.X[i]
+        if self.transform:
+            x = self.transform(x)
+        return x, self.y[i]`},
+{h:'DataLoader: the parts that matter',
+p:`<ul>
+<li><code>batch_size</code> — with <code>shuffle=True</code> for training, <code>False</code> for eval.</li>
+<li><code>num_workers</code> — subprocesses preparing batches ahead of the GPU. 0 means the main process does everything (fine for debugging, slow for training). Start at 4 per GPU.</li>
+<li><code>pin_memory=True</code> — page-locked host memory enables fast async <code>.to(device, non_blocking=True)</code> copies.</li>
+<li><code>drop_last=True</code> — drop the ragged final batch; BatchNorm hates batch size 1.</li>
+<li><code>collate_fn</code> — how a list of samples becomes a batch; override it for variable-length sequences (padding) or exotic structures.</li>
+</ul>`,
+code:`loader = DataLoader(ds, batch_size=64, shuffle=True,
+                    num_workers=4, pin_memory=True, drop_last=True)
+
+# custom collate: pad variable-length sequences
+from torch.nn.utils.rnn import pad_sequence
+def collate(batch):
+    seqs, labels = zip(*batch)
+    lengths = torch.tensor([len(s) for s in seqs])
+    return pad_sequence(seqs, batch_first=True), torch.stack(labels), lengths`},
+{h:'Transforms & splits',
+p:`<p>Vision pipelines chain <code>torchvision.transforms</code>: augment at train time (crops, flips), never at eval time; normalise with <em>training-set</em> statistics in both.</p>
+<div class="gotcha"><span class="g-tag">gotcha</span><p>Computing normalisation stats — or fitting any preprocessing — on the full dataset before splitting is <strong>data leakage</strong>. The validation set has now whispered its statistics to the model. Split first, fit on train only.</p></div>`,
+code:`from torchvision import transforms
+train_tf = transforms.Compose([
+    transforms.RandomResizedCrop(224),
+    transforms.RandomHorizontalFlip(),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485,0.456,0.406], std=[0.229,0.224,0.225]),
+])
+
+train_ds, val_ds = torch.utils.data.random_split(
+    ds, [0.9, 0.1], generator=torch.Generator().manual_seed(42))`,
+cap:'Seed the split generator or your "validation set" changes every run and your metrics are fiction.'}],
+widget:null,after:[
+{h:'One blog to bookmark',
+p:`<p>The input pipeline is the most common hidden cause of a slow GPU — worth understanding well.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p>PyTorch's official <a href="https://pytorch.org/tutorials/beginner/basics/data_tutorial.html" target="_blank" rel="noopener">"Datasets &amp; DataLoaders"</a> guide walks the whole path from a raw <code>Dataset</code> to batched tensors, and is the clearest reference for <code>num_workers</code>, <code>collate_fn</code> and transforms when you roll your own.</p></div>`}],
+quiz:[
+{q:'num_workers=0 means…',o:['no data loading','loading in the main process — GPU may starve','an error','one worker thread'],a:1,why:'Zero workers = synchronous loading in the training process. The GPU waits on Python between batches.'},
+{q:'pin_memory=True exists to…',o:['cache the dataset in RAM','enable fast async host→GPU copies','shuffle better','lock the file'],a:1,why:'Page-locked memory lets CUDA DMA transfer overlap compute via non_blocking=True.'},
+{q:'Normalising with statistics computed on train+val together is…',o:['best practice','data leakage','required by BatchNorm','only wrong for images'],a:1,why:'Any statistic fitted on validation data leaks information about it into training. Fit on train only.'}]},
+
+/* ---------- 06 CNN ---------- */
+{id:'cnn',n:'06',g:'Act II · Architectures',t:'Convolutional Networks',read:'10 min',
+sub:'Convolutions bake two facts about images into the architecture: nearby pixels are related, and a cat in the corner is still a cat.',
+body:[
+{h:'Start here: why images need a different layer',
+p:`<p>An image is a grid of pixels, and nearby pixels belong together — an edge, an eye, a wheel each span a little patch, not the whole picture. A <strong>convolution</strong> is a tiny window (a kernel) that slides across the image hunting for one pattern everywhere it goes. Learn a single edge detector once, reuse it across the entire image.</p>
+<ul>
+<li><strong>kernel / filter:</strong> the small sliding window of learnable weights.</li>
+<li><strong>channel:</strong> one feature map (or a colour plane, like R, G, B).</li>
+<li><strong>stride:</strong> how many pixels the window jumps each step.</li>
+<li><strong>padding:</strong> a border added so the edges are not lost.</li>
+<li><strong>feature map:</strong> the output showing where the pattern was found.</li>
+</ul>
+<p>Analogy: a rubber stamp you press across a page — the same stamp, pressed everywhere, marking each spot it matches.</p>`,
+code:`import torch
+import torch.nn as nn
+
+x = torch.randn(1, 3, 32, 32)     # 1 image, 3 colour channels, 32×32
+conv = nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, padding=1)
+y = conv(x)
+print(y.shape)   # torch.Size([1, 16, 32, 32]) -> 16 feature maps, size preserved`,
+cap:'One Conv2d holds out_channels little kernels; a 3×3 kernel with padding=1 keeps the height and width unchanged.'},
+{h:'Why convolution beats dense on images',
+p:`<p>A dense layer on a 224×224 RGB image needs 150K weights <em>per neuron</em> and must relearn "edge" separately at every location. A conv layer learns one small kernel and slides it everywhere: <strong>local connectivity</strong> + <strong>weight sharing</strong> = translation equivariance and a ~1000× parameter cut. Watch the mechanism:</p>`},
+],
+widget:'conv',
+after:[
+{h:'Shape arithmetic you can do in your head',
+p:`<p>For input size N, kernel K, padding P, stride S: <code>out = ⌊(N + 2P − K)/S⌋ + 1</code>. The two idioms to memorise: <strong>3×3, padding 1, stride 1</strong> preserves size; <strong>stride 2</strong> halves it. Channels are independent of all this — <code>Conv2d(C_in, C_out, ...)</code> holds <code>C_out</code> kernels, each spanning all <code>C_in</code> input channels.</p>`,
+code:`import torch.nn as nn
+
+class ConvBlock(nn.Module):
+    def __init__(self, c_in, c_out, stride=1):
+        super().__init__()
+        self.conv = nn.Conv2d(c_in, c_out, 3, stride, padding=1, bias=False)
+        self.bn   = nn.BatchNorm2d(c_out)   # bias=False: BN has its own shift
+    def forward(self, x):
+        return nn.functional.relu(self.bn(self.conv(x)))
+
+class SmallNet(nn.Module):
+    def __init__(self, n_classes=10):
+        super().__init__()
+        self.features = nn.Sequential(
+            ConvBlock(3, 32), ConvBlock(32, 32),
+            ConvBlock(32, 64, stride=2),       # 32×32 → 16×16
+            ConvBlock(64, 64),
+            ConvBlock(64, 128, stride=2),      # → 8×8
+        )
+        self.pool = nn.AdaptiveAvgPool2d(1)    # → (B,128,1,1), any input size
+        self.head = nn.Linear(128, n_classes)
+    def forward(self, x):
+        return self.head(self.pool(self.features(x)).flatten(1))`,
+cap:'AdaptiveAvgPool2d(1) is the trick that makes one network accept any image resolution.'},
+{h:'Residual connections: the deep-network unlock',
+p:`<p>Past ~20 layers, plain convnets get <em>worse</em> with depth — not from overfitting but from optimisation failure. ResNet's fix: make each block compute a <strong>residual</strong>, <code>out = F(x) + x</code>. Identity becomes the default (easy to learn: push F to zero), and the skip path gives gradients an unobstructed highway to early layers. This one idea enabled 100+ layer networks and echoes through every transformer.</p>`,
+code:`class ResidualBlock(nn.Module):
+    def __init__(self, c):
+        super().__init__()
+        self.c1 = nn.Conv2d(c, c, 3, padding=1, bias=False)
+        self.b1 = nn.BatchNorm2d(c)
+        self.c2 = nn.Conv2d(c, c, 3, padding=1, bias=False)
+        self.b2 = nn.BatchNorm2d(c)
+    def forward(self, x):
+        out = F.relu(self.b1(self.c1(x)))
+        out = self.b2(self.c2(out))
+        return F.relu(out + x)        # the skip: gradient superhighway`},
+{h:'Transfer learning: the 95% use case',
+p:`<p>Almost nobody trains vision backbones from scratch. Load ImageNet weights, replace the head, fine-tune. Two regimes: <strong>feature extraction</strong> (freeze backbone; fast, small data) and <strong>fine-tuning</strong> (unfreeze with a 10–100× smaller lr for pretrained layers).</p>`,
+code:`from torchvision import models
+m = models.resnet50(weights="IMAGENET1K_V2")
+m.fc = nn.Linear(m.fc.in_features, n_classes)   # new head
+
+for p in m.parameters():        # regime 1: freeze all…
+    p.requires_grad = False
+for p in m.fc.parameters():     # …except the head
+    p.requires_grad = True`},
+{h:'One blog to bookmark',
+p:`<p>The shape arithmetic and intuition behind convnets reward one careful, visual read.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p>Stanford CS231n's <a href="https://cs231n.github.io/convolutional-networks/" target="_blank" rel="noopener">"Convolutional Neural Networks"</a> notes are the classic explanation of kernels, stride, padding, receptive fields and pooling — with the diagrams that make the output-size formula finally stick.</p></div>`}],
+quiz:[
+{q:'Input 32×32, Conv2d(kernel=3, padding=1, stride=2). Output spatial size?',o:['32×32','16×16','15×15','17×17'],a:1,why:'⌊(32+2−3)/2⌋+1 = ⌊31/2⌋+1 = 15+1 = 16.'},
+{q:'Weight sharing in convs buys you…',o:['bigger receptive fields','translation equivariance + far fewer params','deeper nets','normalisation'],a:1,why:'One kernel scans everywhere: features detected regardless of position, at a tiny parameter cost.'},
+{q:'The residual skip connection primarily solves…',o:['overfitting','vanishing/blocked gradients in very deep nets','memory usage','class imbalance'],a:1,why:'The identity path lets gradients flow undamped, making 50–1000 layer networks trainable.'},
+{q:'bias=False in a conv followed by BatchNorm because…',o:['biases overfit','BN\'s β makes the conv bias redundant','it breaks autograd','speed only'],a:1,why:'BatchNorm subtracts the mean and adds its own learned shift β — the conv bias would be cancelled anyway.'}]},
+
+/* ---------- 07 RNN ---------- */
+{id:'rnn',n:'07',g:'Act II · Architectures',t:'Recurrent Networks',read:'9 min',
+sub:'A loop with memory: RNNs read sequences one step at a time, carrying a hidden state. Transformers took the crown, but gated recurrence still runs the streaming world — and its ideas are everywhere.',
+body:[
+{h:'Start here: networks with a memory',
+p:`<p>Some data arrives in order — words in a sentence, prices over days, notes in a melody — and that order carries meaning. A <strong>recurrent network</strong> reads a sequence one step at a time and keeps a running memory (the hidden state) that it updates at every step, like reading a book and remembering the plot so far.</p>
+<ul>
+<li><strong>sequence:</strong> an ordered list of inputs.</li>
+<li><strong>timestep:</strong> one item in the sequence.</li>
+<li><strong>hidden state:</strong> the memory carried forward from step to step.</li>
+<li><strong>recurrence:</strong> reusing the <em>same</em> cell at every timestep.</li>
+</ul>
+<p>Analogy: reading a sentence word by word — your understanding at word 7 depends on words 1–6, held in your head.</p>`,
+code:`import torch
+import torch.nn as nn
+
+rnn = nn.RNN(input_size=8, hidden_size=16, batch_first=True)
+x = torch.randn(2, 5, 8)      # 2 sequences, 5 timesteps, 8 features each
+out, h = rnn(x)
+print(out.shape)   # (2, 5, 16) -> the memory at every timestep
+print(h.shape)     # (1, 2, 16) -> the final memory per sequence`,
+cap:'The same cell runs at each of the 5 timesteps, passing its hidden state forward like a baton.'},
+{h:'The recurrence',
+p:`<p>An RNN applies the <em>same</em> cell at every timestep: <code>h_t = tanh(W_ih·x_t + W_hh·h_{t−1} + b)</code>. The hidden state is a running summary of everything read so far. Backprop through a sequence unrolls this loop — "backpropagation through time" — which means gradients are multiplied by <code>W_hh</code> once per step. Powers of a matrix either explode or vanish; long-range memory dies.</p>`,
+code:`rnn = nn.RNN(input_size=32, hidden_size=64,
+             num_layers=2, batch_first=True)
+
+x = torch.randn(8, 100, 32)        # (batch, seq_len, features)
+out, h_n = rnn(x)
+print(out.shape)   # (8, 100, 64) — hidden state at EVERY step
+print(h_n.shape)   # (2, 8, 64)  — final state per layer`,
+cap:'batch_first=True or you will spend an afternoon confused about (seq, batch, feat). Everyone does it once.'},
+{h:'LSTM & GRU: gates against forgetting',
+p:`<p>The LSTM adds a <strong>cell state</strong> — a conveyor belt modified only by element-wise gates: <em>forget</em> (what to erase), <em>input</em> (what to write), <em>output</em> (what to reveal as h_t). Because the belt's gradient path is multiplicative-by-gates rather than by <code>W_hh</code> repeatedly, memory survives hundreds of steps. The GRU fuses gates into a lighter two-gate design — usually similar accuracy, fewer parameters, pick by benchmark.</p>`,
+code:`lstm = nn.LSTM(32, 64, num_layers=2, batch_first=True,
+               dropout=0.2, bidirectional=True)
+out, (h_n, c_n) = lstm(x)      # note: LSTM returns (h, c) tuple
+print(out.shape)               # (8, 100, 128) — 2×64, both directions
+
+# classification head: use the last timestep (or pool)
+logits = classifier(out[:, -1, :])`},
+{h:'Variable lengths, clipping, and reality',
+p:`<p>Real sequences have real lengths. Pad to a common length, then <code>pack_padded_sequence</code> so the RNN skips pad tokens instead of hallucinating on them. And clip gradients — exploding gradients aren't a theoretical concern in RNNs, they're a Tuesday.</p>`,
+code:`from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
+
+packed = pack_padded_sequence(x_padded, lengths,
+                              batch_first=True, enforce_sorted=False)
+out_packed, (h, c) = lstm(packed)
+out, _ = pad_packed_sequence(out_packed, batch_first=True)
+
+torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)  # non-negotiable`}],
+widget:null,after:[
+{h:'One blog to bookmark',
+p:`<p>The leap from a plain RNN to an LSTM is best understood with pictures of the gates in action.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p>Christopher Olah's <a href="https://colah.github.io/posts/2015-08-Understanding-LSTMs/" target="_blank" rel="noopener">"Understanding LSTM Networks"</a> is the definitive, diagram-driven walkthrough of the cell state and its forget/input/output gates — the clearest explanation of why gated recurrence remembers where vanilla RNNs forget.</p></div>`}],
+quiz:[
+{q:'Vanilla RNN gradients over long sequences tend to…',o:['stay stable','vanish or explode via repeated W_hh multiplication','oscillate harmlessly','become sparse'],a:1,why:'BPTT multiplies by W_hh per step; eigenvalues <1 vanish, >1 explode. This is the problem gates solve.'},
+{q:'The LSTM cell state fixes this via…',o:['a bigger W_hh','an additive, gate-controlled path for gradients','skip connections to input','ReLU'],a:1,why:'The conveyor belt is updated by element-wise gated add/scale, not repeated dense matmuls — gradients survive.'},
+{q:'nn.LSTM returns…',o:['out only','(out, h_n)','(out, (h_n, c_n))','(h_n, c_n)'],a:2,why:'LSTMs carry both hidden and cell state; the second return is the tuple. RNN/GRU return (out, h_n).'}]},
+
+/* ---------- 08 TRANSFORMERS ---------- */
+{id:'attention',n:'08',g:'Act II · Architectures',t:'Attention & Transformers',read:'12 min',
+sub:'Ditch the loop: let every token look at every other token at once, and let the network learn where to look. This is the architecture eating the world.',
+body:[
+{h:'Start here: letting words look at each other',
+p:`<p>To understand "it" in "the robot drank the battery because it was empty," a model must let "it" look back at "battery." <strong>Attention</strong> is exactly that: every word (token) looks at every other word and decides how much to borrow from each. There is no looping through the sentence — all the looking happens at once, in parallel.</p>
+<ul>
+<li><strong>token:</strong> a chunk of input, roughly a word.</li>
+<li><strong>query:</strong> what a token is looking for.</li>
+<li><strong>key:</strong> what a token advertises as a match.</li>
+<li><strong>value:</strong> the content a token hands over when attended to.</li>
+<li><strong>attention weight:</strong> how strongly one token attends to another.</li>
+</ul>
+<p>Analogy: a room of people; each person asks a question (query), everyone signals how relevant they are (keys), and then shares notes (values) in proportion to that relevance.</p>`,
+code:`import torch
+import torch.nn.functional as F
+
+# 3 tokens, each a 4-dim vector (using q=k=v for simplicity)
+q = k = v = torch.randn(3, 4)
+scores  = q @ k.T / (4 ** 0.5)        # how much each token matches each other
+weights = F.softmax(scores, dim=-1)   # turn scores into blend ratios (rows sum to 1)
+out     = weights @ v                 # each token becomes a weighted blend of values
+print(weights.shape, out.shape)       # (3, 3) (3, 4)`,
+cap:'The (3,3) weight matrix is the whole story: row i says how much token i attends to every token.'},
+{h:'Attention is a soft dictionary lookup',
+p:`<p>Each token emits a <strong>query</strong> ("what am I looking for?"), a <strong>key</strong> ("what do I contain?") and a <strong>value</strong> ("what do I give you if you attend to me"). Scores are dot products Q·Kᵀ, scaled by √d_k (so softmax doesn't saturate as dimensions grow), softmaxed into weights, and used to blend values. One matrix multiply chain, fully parallel, no recurrence:</p>`,
+code:`import torch, math
+import torch.nn.functional as F
+
+def scaled_dot_product_attention(q, k, v, mask=None):
+    # q,k,v: (B, heads, seq, d_k)
+    scores = q @ k.transpose(-2, -1) / math.sqrt(q.size(-1))
+    if mask is not None:
+        scores = scores.masked_fill(mask == 0, float("-inf"))
+    attn = F.softmax(scores, dim=-1)
+    return attn @ v, attn`,
+cap:'In production use F.scaled_dot_product_attention — it dispatches to FlashAttention kernels automatically.'},
+{h:'Feel it',
+p:`<p>Below, each head has learned a different <em>relationship</em>. Head 1 tracks local syntax; head 2 has learned coreference. Click <span class="mono">it</span>.</p>`},
+],
+widget:'attn',
+after:[
+{h:'Multi-head: many relationships at once',
+p:`<p>One attention pattern per layer is too few — language has syntax, coreference, position, semantics simultaneously. So we split d_model into h heads, run attention independently in each subspace, concatenate, and mix with an output projection. Same FLOPs as one big head, h different learned "relations".</p>`,
+code:`class MultiHeadAttention(nn.Module):
+    def __init__(self, d_model=512, n_heads=8):
+        super().__init__()
+        assert d_model % n_heads == 0
+        self.h, self.d_k = n_heads, d_model // n_heads
+        self.qkv  = nn.Linear(d_model, 3 * d_model)
+        self.proj = nn.Linear(d_model, d_model)
+
+    def forward(self, x, mask=None):
+        B, T, D = x.shape
+        q, k, v = self.qkv(x).chunk(3, dim=-1)
+        # (B,T,D) → (B, heads, T, d_k)
+        shape = lambda t: t.view(B, T, self.h, self.d_k).transpose(1, 2)
+        out = F.scaled_dot_product_attention(shape(q), shape(k), shape(v),
+                                             attn_mask=mask)
+        out = out.transpose(1, 2).contiguous().view(B, T, D)
+        return self.proj(out)`},
+{h:'The transformer block',
+p:`<p>A block = attention (tokens talk to each other) + position-wise MLP (each token thinks alone), each wrapped in a residual connection and layer norm. Modern stacks put the norm <em>before</em> each sublayer (pre-LN) — it trains far more stably. Because attention is permutation-invariant, position must be injected explicitly: learned embeddings, sinusoids, or rotary (RoPE) in current LLMs.</p>`,
+code:`class Block(nn.Module):
+    def __init__(self, d=512, heads=8, ff=2048, p=0.1):
+        super().__init__()
+        self.ln1 = nn.LayerNorm(d)
+        self.attn = MultiHeadAttention(d, heads)
+        self.ln2 = nn.LayerNorm(d)
+        self.mlp = nn.Sequential(
+            nn.Linear(d, ff), nn.GELU(),
+            nn.Dropout(p), nn.Linear(ff, d))
+
+    def forward(self, x, mask=None):
+        x = x + self.attn(self.ln1(x), mask)   # pre-LN residual
+        x = x + self.mlp(self.ln2(x))
+        return x`},
+{h:'Decoders, masks, and why GPT can\'t peek',
+p:`<p>A <strong>causal mask</strong> zeroes attention to future positions — that single triangular matrix is what turns a transformer into an autoregressive language model. Encoders (BERT-style) see everything and excel at understanding; decoders (GPT-style) predict the next token; ViT chops images into 16×16 patch-tokens and feeds them to an encoder, no convolutions required.</p>
+<div class="gotcha"><span class="g-tag">gotcha</span><p>Attention is O(T²) in sequence length — in both compute and memory. Doubling context quadruples cost. This is why FlashAttention, sliding windows, and KV-caching exist, and why long-context models are an engineering discipline of their own.</p></div>`,
+code:`T = x.size(1)
+causal = torch.tril(torch.ones(T, T, dtype=torch.bool, device=x.device))
+out = block(x, mask=causal)     # position t sees only ≤ t`},
+{h:'One blog to bookmark',
+p:`<p>Transformers have many moving parts; one illustrated guide lines them all up in order.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p>Jay Alammar's <a href="https://jalammar.github.io/illustrated-transformer/" target="_blank" rel="noopener">"The Illustrated Transformer"</a> animates queries, keys, values, multi-head attention and positional encoding step by step. It is the single most-recommended on-ramp to the architecture eating the world.</p></div>`}],
+quiz:[
+{q:'The √d_k scaling exists because…',o:['it normalises values','large dot products saturate softmax → dead gradients','it speeds matmul','it prevents overflow only'],a:1,why:'Dot products grow with dimension; huge logits make softmax one-hot and its gradient ~0. Scaling keeps it soft.'},
+{q:'Multi-head attention lets the model…',o:['see longer sequences','attend to different relation types in parallel subspaces','skip layer norm','use fewer FLOPs'],a:1,why:'Each head is attention in its own projected subspace — syntax in one, coreference in another, as the lab shows.'},
+{q:'Transformers need positional encodings because…',o:['GPUs require it','attention is permutation-invariant','embeddings are random','masks delete positions'],a:1,why:'Without injected position, "robot drank battery" and "battery drank robot" produce identical attention math.'},
+{q:'Self-attention cost scales with sequence length T as…',o:['O(T)','O(T log T)','O(T²)','O(1) with KV cache'],a:2,why:'Every token scores against every token: T×T matrix. This quadratic wall drives most modern attention research.'}]},
+
+/* ---------- 09 GENERATIVE ---------- */
+{id:'generative',n:'09',g:'Act II · Architectures',t:'Generative Models',read:'11 min',
+sub:'Three ways to teach a network to dream: compress and decode (VAE), duel (GAN), or denoise backwards from static (diffusion).',
+body:[
+{h:'Start here: models that create, not classify',
+p:`<p>Most networks answer "what is this?" <strong>Generative models</strong> answer "make me a new one." Instead of mapping an image to a label, they learn the shape of the data itself, so they can sample brand-new examples that look real.</p>
+<ul>
+<li><strong>generative model:</strong> learns to produce data, not just label it.</li>
+<li><strong>latent space:</strong> a compact "idea space" of codes you can sample from.</li>
+<li><strong>sampling:</strong> drawing a fresh example (often from random noise).</li>
+<li><strong>reconstruction:</strong> rebuilding an input from its compressed code.</li>
+</ul>
+<p>Analogy: a classifier is a critic naming paintings; a generative model is the painter.</p>`,
+code:`import torch
+import torch.nn as nn
+
+# a decoder: turn a short random "idea" vector into a 28×28 image
+decoder = nn.Sequential(nn.Linear(16, 256), nn.ReLU(), nn.Linear(256, 28 * 28))
+
+z = torch.randn(1, 16)            # sample a random idea from latent space
+fake = decoder(z).view(28, 28)
+print(fake.shape)                 # torch.Size([28, 28]) -> a freshly dreamed image`,
+cap:'Sampling a random z and decoding it is, at heart, how VAEs, GANs and diffusion all produce new data.'},
+{h:'VAE: a probabilistic bottleneck',
+p:`<p>An autoencoder squeezes data through a small latent code. A <strong>variational</strong> autoencoder makes that code a distribution — the encoder outputs a mean and variance, we sample, the decoder reconstructs. The loss is reconstruction + a KL term pulling the latent space toward N(0, I), which is what makes the space smooth enough to sample from. Gradients flow through sampling via the <strong>reparameterisation trick</strong>: z = μ + σ·ε.</p>`,
+code:`class VAE(nn.Module):
+    def __init__(self, d_in=784, d_z=32):
+        super().__init__()
+        self.enc = nn.Sequential(nn.Linear(d_in, 400), nn.ReLU())
+        self.mu, self.logvar = nn.Linear(400, d_z), nn.Linear(400, d_z)
+        self.dec = nn.Sequential(nn.Linear(d_z, 400), nn.ReLU(),
+                                 nn.Linear(400, d_in))
+
+    def forward(self, x):
+        h = self.enc(x)
+        mu, logvar = self.mu(h), self.logvar(h)
+        z = mu + torch.exp(0.5 * logvar) * torch.randn_like(mu)  # reparam
+        return self.dec(z), mu, logvar
+
+def vae_loss(recon, x, mu, logvar):
+    rec = F.binary_cross_entropy_with_logits(recon, x, reduction="sum")
+    kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+    return rec + kld`},
+{h:'GAN: learning by forgery',
+p:`<p>A <strong>generator</strong> maps noise to fakes; a <strong>discriminator</strong> learns to spot them; each gradient step makes the other's job harder. Trained to equilibrium, the generator's fakes are indistinguishable from data. GANs produce sharp samples but train like a knife fight: mode collapse (G finds one fake that always works), oscillation, vanishing D signal.</p>`,
+code:`# one GAN step — note the TWO optimizers and detach()
+d_opt.zero_grad()
+real_loss = bce(D(x_real), torch.ones(B, 1))
+fake = G(torch.randn(B, z_dim))
+fake_loss = bce(D(fake.detach()), torch.zeros(B, 1))  # detach: don't train G here
+(real_loss + fake_loss).backward()
+d_opt.step()
+
+g_opt.zero_grad()
+fake  = G(torch.randn(B, z_dim))
+g_loss = bce(D(fake), torch.ones(B, 1))   # G wants D fooled
+g_loss.backward()                          # flows through D into G
+g_opt.step()                               # …but only G's params update`,
+cap:'Forgetting .detach() in the D step trains the generator to help the discriminator. A beautiful, terrible bug.'},
+{h:'Diffusion: destroy, then learn to un-destroy',
+p:`<p>The idea behind Stable Diffusion and friends is disarmingly simple. <strong>Forward</strong>: add Gaussian noise to an image over T steps until it's pure static — no learning involved. <strong>Reverse</strong>: train a network (usually a U-Net or transformer) to predict the noise that was added at each step. Generation = start from static, subtract predicted noise T times. The training objective is just MSE on the noise:</p>`,
+code:`def diffusion_loss(model, x0, T=1000, alphas_bar=None):
+    t   = torch.randint(0, T, (x0.size(0),), device=x0.device)
+    eps = torch.randn_like(x0)
+    ab  = alphas_bar[t].view(-1, 1, 1, 1)          # noise schedule
+    x_t = ab.sqrt() * x0 + (1 - ab).sqrt() * eps   # noisy image at step t
+    return F.mse_loss(model(x_t, t), eps)          # predict the noise`,
+cap:'Stable training (plain MSE!), superb samples, at the price of many inference steps — the opposite trade to GANs.'},
+{h:'Which one, when',
+p:`<ul>
+<li><strong>VAE</strong> — you want a smooth latent space: interpolation, anomaly detection, representation learning.</li>
+<li><strong>GAN</strong> — fast single-pass sampling, sharp outputs, and you have the patience to babysit training.</li>
+<li><strong>Diffusion</strong> — best quality and diversity today; slower sampling; the backbone of modern image/audio/video generation.</li>
+</ul>`}],
+widget:null,after:[
+{h:'One blog to bookmark',
+p:`<p>Diffusion is the backbone of today's image and video generators, and it is more approachable than its reputation suggests.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p>Lilian Weng's <a href="https://lilianweng.github.io/posts/2021-07-11-diffusion-models/" target="_blank" rel="noopener">"What are Diffusion Models?"</a> derives the forward-noising and reverse-denoising process cleanly from scratch — the best bridge from the plain-MSE code in this chapter to the math behind Stable Diffusion.</p></div>`}],
+quiz:[
+{q:'The reparameterisation trick z = μ + σ·ε exists so that…',o:['sampling is faster','gradients can flow through a random sample to the encoder','KL is computable','the decoder sees noise'],a:1,why:'Sampling is non-differentiable; rewriting it as a deterministic function of (μ, σ) plus external noise restores the gradient path.'},
+{q:'In the discriminator step, fake.detach() prevents…',o:['memory leaks','generator weights being updated by the D loss','mode collapse','NaNs'],a:1,why:'Without detach, D\'s backward flows into G, optimising G to make fakes easier to catch.'},
+{q:'A diffusion model is trained to predict…',o:['the clean image directly','the class label','the noise added at step t','the next pixel'],a:2,why:'The ε-prediction objective is a simple MSE — the source of diffusion\'s famously stable training.'}]},
+];
+
+/* =====================================================
+   CURRICULUM — Act III & IV (chapters 10–21)
+   ===================================================== */
+CH.push(
+
+/* ---------- 10 DEPLOYMENT ---------- */
+{id:'deploy',n:'10',g:'Act III · Production',t:'Model Deployment',read:'8 min',
+sub:'A model in a notebook is a science project. This chapter is the bridge from .pt file to production traffic.',
+body:[
+{h:'Start here: from notebook to the real world',
+p:`<p>A trained model is a file full of numbers plus the code that runs them. <strong>Deployment</strong> is wrapping that so other programs can send it inputs and get predictions back — reliably, quickly, and without dragging your training code along.</p>
+<ul>
+<li><strong>inference:</strong> using a trained model to predict, with no learning happening.</li>
+<li><strong>checkpoint / state_dict:</strong> the saved weights of the model.</li>
+<li><strong>serialization / export:</strong> turning the model into a portable file.</li>
+<li><strong>latency:</strong> time for one prediction. <strong>throughput:</strong> predictions per second.</li>
+</ul>
+<p>Analogy: training is writing the recipe; deployment is opening the restaurant and serving it, fast, to every customer who walks in.</p>`,
+code:`# the two moves that separate training from serving
+model.eval()                       # freeze dropout / batchnorm for inference
+with torch.inference_mode():       # no gradient bookkeeping -> faster, leaner
+    logits = model(x)
+    pred = logits.argmax(dim=1)    # the actual answer you return`,
+cap:'model.eval() + torch.inference_mode() is the minimum ritual before any model faces real traffic.'},
+{h:'Export: escape the Python interpreter',
+p:`<p>Production wants your model without a Python dependency, or at least without your training code. The modern path is <code>torch.export</code> / <code>torch.compile</code>-era tooling plus <strong>ONNX</strong> for cross-runtime portability (TensorRT, ONNX Runtime, CoreML, browsers). TorchScript (<code>torch.jit.trace/script</code>) is the legacy path you will still meet in the wild.</p>
+<div class="gotcha"><span class="g-tag">gotcha</span><p><code>torch.jit.trace</code> records ONE execution path with example inputs. Data-dependent <code>if</code> branches are frozen at trace time — your exported model silently always takes the branch the example took. Use scripting or torch.export for control flow.</p></div>`,
+code:`model.eval()
+example = torch.randn(1, 3, 224, 224)
+
+# ONNX — the lingua franca
+torch.onnx.export(model, example, "model.onnx",
+                  input_names=["image"], output_names=["logits"],
+                  dynamic_axes={"image": {0: "batch"}})   # variable batch!
+
+# verify before you ship
+import onnxruntime as ort
+sess = ort.InferenceSession("model.onnx")
+out = sess.run(None, {"image": example.numpy()})
+torch.testing.assert_close(model(example), torch.tensor(out[0]),
+                           rtol=1e-3, atol=1e-4)`,
+cap:'Always numerically compare the exported model against the original. Silent export drift is real.'},
+{h:'Inference-mode hygiene',
+p:`<p>The inference checklist: <code>model.eval()</code> (freeze dropout/BN), <code>torch.inference_mode()</code> (stronger, faster no_grad), batch requests together, and pick precision deliberately — fp16/bf16 on GPU roughly doubles throughput.</p>`,
+code:`@torch.inference_mode()          # decorator form
+def predict(batch):
+    return model(batch.to(device)).softmax(-1)
+
+# a minimal FastAPI wrapper
+from fastapi import FastAPI
+app = FastAPI()
+
+@app.post("/predict")
+async def route(payload: Payload):
+    x = preprocess(payload)           # same transforms as eval!
+    probs = predict(x)
+    return {"class": int(probs.argmax()), "conf": float(probs.max())}`},
+{h:'The deployment menu',
+p:`<ul>
+<li><strong>Server GPU</strong> — TorchServe, Triton, or a hand-rolled FastAPI + batching queue. Triton if you need multi-model, dynamic batching, metrics.</li>
+<li><strong>Edge / mobile</strong> — ExecuTorch (PyTorch's mobile runtime), CoreML, or TFLite via ONNX; quantize first (chapter 17).</li>
+<li><strong>Browser</strong> — ONNX Runtime Web / WebGPU for small models.</li>
+</ul>
+<div class="whybox"><span class="g-tag">why it matters</span><p>Training-serving skew — preprocessing that differs between your Dataset and your API — is the #1 production ML bug. Package the transform <em>with</em> the model, and test the whole pipeline, not the weights.</p></div>`}],
+widget:null,after:[
+{h:'One blog to bookmark',
+p:`<p>ONNX is the most common bridge out of PyTorch into fast, portable runtimes — worth a proper first look.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p>PyTorch's official <a href="https://pytorch.org/tutorials/beginner/onnx/intro_onnx.html" target="_blank" rel="noopener">"Introduction to ONNX"</a> tutorial walks through exporting a model, inspecting the graph, and verifying the exported version matches the original numerically — the export drift check this chapter insists on.</p></div>`}],
+quiz:[
+{q:'torch.jit.trace on a model with data-dependent if-branches will…',o:['error loudly','freeze whichever branch the example input took','handle both branches','fall back to eager'],a:1,why:'Tracing records ops actually executed. Untaken branches simply do not exist in the traced graph.'},
+{q:'dynamic_axes in torch.onnx.export exists to…',o:['speed up export','allow variable batch size at inference','enable quantization','compress the file'],a:1,why:'Without it the exported graph hard-codes the example batch size — batch-1 only serving.'},
+{q:'The most common production ML bug class is…',o:['GPU OOM','training–serving preprocessing skew','integer overflow','license issues'],a:1,why:'If serving normalises differently than training did, the model quietly sees a distribution it never learned.'}]},
+
+/* ---------- 11 LIGHTNING ---------- */
+{id:'lightning',n:'11',g:'Act III · Production',t:'PyTorch Lightning',read:'7 min',
+sub:'Keep your science, delete your boilerplate. Lightning owns the loop; you own the ideas.',
+body:[
+{h:'Start here: deleting the boilerplate',
+p:`<p>Every training script repeats the same plumbing: move data to the GPU, zero the gradients, backward, step, save checkpoints, loop over epochs. <strong>PyTorch Lightning</strong> writes that plumbing for you, so you only write the parts that are actually your idea — the model and the loss.</p>
+<ul>
+<li><strong>boilerplate:</strong> repetitive glue code that is the same in every project.</li>
+<li><strong>LightningModule:</strong> your model plus its train/validation steps.</li>
+<li><strong>Trainer:</strong> the object that owns the loop and the hardware.</li>
+<li><strong>callback:</strong> a plug-in for checkpointing, early stopping, logging, etc.</li>
+</ul>
+<p>Analogy: same engine, but Lightning is the automatic transmission — you stop shifting gears by hand and just drive.</p>`,
+code:`import lightning as L
+
+class Lit(L.LightningModule):
+    def training_step(self, batch, idx):        # just the science...
+        x, y = batch
+        return self.loss_fn(self.net(x), y)     # no zero_grad/backward/step!
+    def configure_optimizers(self):
+        return torch.optim.Adam(self.parameters(), lr=1e-3)
+
+L.Trainer(max_epochs=10, accelerator="auto").fit(Lit(), loader)  # ...Lightning drives`,
+cap:'Notice what is gone: device moves, zero_grad, backward, step, the epoch loop. The Trainer owns all of it.'},
+{h:'The refactor',
+p:`<p>Lightning reorganises the code you already wrote: model + loss into a <code>LightningModule</code>, loops/devices/checkpointing into the <code>Trainer</code>. The payoff is that <em>one flag</em> switches you from laptop CPU to multi-GPU bf16 with gradient accumulation — no loop rewrites.</p>`,
+code:`import lightning as L
+
+class LitClassifier(L.LightningModule):
+    def __init__(self, lr=3e-4):
+        super().__init__()
+        self.save_hyperparameters()
+        self.net = SmallNet()
+        self.loss_fn = nn.CrossEntropyLoss()
+
+    def training_step(self, batch, batch_idx):
+        x, y = batch                      # no .to(device) — handled
+        loss = self.loss_fn(self.net(x), y)
+        self.log("train_loss", loss, prog_bar=True)
+        return loss                       # no backward/step — handled
+
+    def validation_step(self, batch, batch_idx):
+        x, y = batch
+        acc = (self.net(x).argmax(1) == y).float().mean()
+        self.log("val_acc", acc, prog_bar=True)
+
+    def configure_optimizers(self):
+        return torch.optim.AdamW(self.parameters(), lr=self.hparams.lr)
+
+trainer = L.Trainer(max_epochs=10, accelerator="auto", devices="auto",
+                    precision="bf16-mixed",
+                    callbacks=[L.pytorch.callbacks.ModelCheckpoint(monitor="val_acc", mode="max"),
+                               L.pytorch.callbacks.EarlyStopping(monitor="val_acc", mode="max", patience=3)])
+trainer.fit(LitClassifier(), train_loader, val_loader)`,
+cap:'Notice what is absent: device moves, zero_grad, backward, step, checkpoint code, epoch loops.'},
+{h:'What you get for free',
+p:`<ul>
+<li><strong>Scaling flags</strong>: <code>devices=8, strategy="ddp"</code> or <code>"fsdp"</code> — same script.</li>
+<li><strong>Callbacks</strong>: checkpointing, early stopping, LR monitors, your own hooks.</li>
+<li><strong>Loggers</strong>: TensorBoard/W&B/MLflow via <code>self.log</code>.</li>
+<li><strong>Sanity</strong>: automatic val sanity check, <code>overfit_batches=1</code> (chapter 4's test as a flag!), <code>fast_dev_run=True</code> smoke tests.</li>
+</ul>
+<p>When to skip it: exotic training loops (GANs with unusual update ratios, RL) where owning the loop is the point — though <code>manual_optimization</code> covers most of these.</p>`}],
+widget:null,after:[
+{h:'One blog to bookmark',
+p:`<p>The fastest way to internalise the Lightning split is to convert one plain loop and see what disappears.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p>Lightning's own <a href="https://lightning.ai/docs/pytorch/stable/starter/introduction.html" target="_blank" rel="noopener">"Lightning in 15 minutes"</a> guide takes a raw PyTorch loop and refactors it into a <code>LightningModule</code> + <code>Trainer</code> in front of you — the clearest map of exactly which lines Lightning takes over.</p></div>`}],
+quiz:[
+{q:'In training_step you should NOT call…',o:['self.log','loss.backward()','self.net(x)','return loss'],a:1,why:'Lightning runs backward/step for you. Returning the loss is the contract.'},
+{q:'overfit_batches=1 in Trainer is…',o:['a bug','the overfit-one-batch sanity test as a built-in','for tiny datasets','deprecated'],a:1,why:'It trains on a single batch repeatedly — the chapter 4 debugging ritual, productised.'}]},
+
+/* ---------- 12 DISTRIBUTED ---------- */
+{id:'distributed',n:'12',g:'Act III · Production',t:'Distributed Training',read:'10 min',
+sub:'One GPU is a bicycle. This chapter is the freight train: DDP, FSDP, and the collective ops underneath them.',
+body:[
+{h:'Start here: many GPUs, one model',
+p:`<p>One GPU can only hold so much and train so fast. <strong>Distributed training</strong> splits the work across many GPUs (or many machines) that cooperate to train a single model. The most common flavour gives each GPU the same model but a different slice of the data, then averages what they each learn.</p>
+<ul>
+<li><strong>rank:</strong> a GPU's ID number in the group. <strong>world size:</strong> the total number of GPUs.</li>
+<li><strong>replica:</strong> a full copy of the model living on one GPU.</li>
+<li><strong>all-reduce:</strong> averaging the gradients across every GPU.</li>
+<li><strong>shard:</strong> a split-up piece of the data (or, later, of the model).</li>
+</ul>
+<p>Analogy: a study group where everyone reads different chapters, then pools notes so all of them end up with the same complete summary.</p>`,
+code:`# each GPU runs this same script; torchrun assigns it a rank
+import torch.distributed as dist
+from torch.nn.parallel import DistributedDataParallel as DDP
+
+dist.init_process_group("nccl")                  # GPUs join the group
+model = DDP(model.to(rank), device_ids=[rank])   # wrap the model once
+# ...your normal training loop is UNCHANGED; gradients auto-average across GPUs
+
+# launch:  torchrun --nproc_per_node=4 train.py`,
+cap:'Wrap the model in DDP and your ordinary loop suddenly runs on 4 GPUs with gradients averaged automatically.'},
+{h:'DDP: the workhorse',
+p:`<p><strong>DistributedDataParallel</strong> runs one process per GPU. Each holds a full model replica and a different data shard; after backward, gradients are <strong>all-reduced</strong> (averaged across ranks, overlapped with backward computation for speed), so every replica takes an identical optimizer step. Result: near-linear scaling for models that fit on one GPU.</p>`,
+code:`import torch.distributed as dist
+from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.utils.data.distributed import DistributedSampler
+
+def main():
+    dist.init_process_group("nccl")            # torchrun sets env vars
+    rank = dist.get_rank()
+    device = rank % torch.cuda.device_count()
+
+    model = SmallNet().to(device)
+    model = DDP(model, device_ids=[device])
+
+    sampler = DistributedSampler(train_ds)     # each rank: unique shard
+    loader  = DataLoader(train_ds, batch_size=64, sampler=sampler)
+
+    for epoch in range(epochs):
+        sampler.set_epoch(epoch)               # reshuffle across epochs!
+        for xb, yb in loader:
+            ...                                # loop is UNCHANGED
+
+# launch:  torchrun --nproc_per_node=4 train.py`,
+cap:'Forget sampler.set_epoch(epoch) and every epoch sees the same shard order — a subtle accuracy tax.'},
+{h:'When the model itself doesn\'t fit: FSDP',
+p:`<p>DDP keeps a full copy of params + grads + optimizer state on every GPU — for a 7B model in Adam that's ~112 GB per rank. <strong>FSDP (Fully Sharded Data Parallel)</strong> shards all three across ranks, all-gathering parameters just-in-time per layer and freeing them after. You trade communication for the ability to train models far larger than one device.</p>`,
+code:`from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
+from torch.distributed.fsdp.wrap import transformer_auto_wrap_policy
+import functools
+
+policy = functools.partial(transformer_auto_wrap_policy,
+                           transformer_layer_cls={Block})
+model = FSDP(model, auto_wrap_policy=policy,
+             mixed_precision=bf16_policy, device_id=device)`},
+{h:'The mental model: collectives',
+p:`<ul>
+<li><strong>all-reduce</strong> — everyone contributes, everyone gets the sum/mean (DDP gradients).</li>
+<li><strong>all-gather</strong> — everyone gets everyone's shard (FSDP params before a layer).</li>
+<li><strong>reduce-scatter</strong> — sum, then shard the result (FSDP gradients).</li>
+<li><strong>broadcast</strong> — rank 0 to all (initial weights).</li>
+</ul>
+<div class="gotcha"><span class="g-tag">gotcha</span><p>Every rank runs your whole script. Print statements fire N times, checkpoints save N times, wandb runs N times. Guard side effects with <code>if rank == 0:</code> — and put a <code>dist.barrier()</code> before other ranks load what rank 0 saved.</p></div>
+<p>Beyond data parallelism: tensor parallel (split matmuls across GPUs), pipeline parallel (split layers into stages) — the large-LLM stack composes all three ("3D parallelism").</p>`}],
+widget:null,after:[
+{h:'One blog to bookmark',
+p:`<p>When a model no longer fits on one GPU, sharding — not replication — is the answer, and it helps to see why.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p>The PyTorch team's <a href="https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/" target="_blank" rel="noopener">"Introducing PyTorch Fully Sharded Data Parallel (FSDP)"</a> explains, with clear diagrams, how params, gradients and optimizer state get sharded across ranks — the exact trade of communication for memory that lets you train billion-parameter models.</p></div>`}],
+quiz:[
+{q:'After backward, DDP synchronises replicas by…',o:['broadcasting rank 0 weights','all-reducing (averaging) gradients','sharing optimizer state','locking a mutex'],a:1,why:'Averaged grads + identical initial weights + identical updates ⇒ replicas never diverge.'},
+{q:'FSDP\'s advantage over DDP is…',o:['less communication','sharding params/grads/optimizer state so huge models fit','simpler code','determinism'],a:1,why:'DDP replicates full training state per GPU; FSDP shards it, trading comms for memory.'},
+{q:'sampler.set_epoch(epoch) exists so that…',o:['LR decays','the shuffle differs every epoch across ranks','checkpoints sync','workers restart'],a:1,why:'DistributedSampler seeds its shuffle with the epoch; without it, ordering repeats identically.'}]},
+
+/* ---------- 13 EXTENSIONS ---------- */
+{id:'extensions',n:'13',g:'Act III · Production',t:'Custom Extensions',read:'8 min',
+sub:'When Python is too slow and no built-in op fits: custom autograd Functions, C++ extensions, Triton kernels — and knowing when NOT to write them.',
+body:[
+{h:'Start here: teaching PyTorch a new trick',
+p:`<p>PyTorch already knows how to differentiate thousands of operations. But sometimes you need one it does not have, or a faster version of one it does. <strong>Custom extensions</strong> let you define your own operation — and, crucially, tell autograd how to compute its gradient — so it plugs into the rest of the framework as if it were built in.</p>
+<ul>
+<li><strong>operation / op:</strong> a single math step, like add or matmul.</li>
+<li><strong>forward:</strong> compute the output from the inputs.</li>
+<li><strong>backward:</strong> compute the gradient of the output w.r.t. the inputs.</li>
+<li><strong>kernel:</strong> the low-level code (CPU/CUDA/Triton) that actually runs the op.</li>
+</ul>
+<p>Analogy: most cooking uses standard utensils; occasionally you machine a custom tool for one special cut you cannot make otherwise.</p>`,
+code:`import torch
+
+class Square(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, x):
+        ctx.save_for_backward(x)     # stash what backward will need
+        return x * x
+    @staticmethod
+    def backward(ctx, g):
+        (x,) = ctx.saved_tensors
+        return g * 2 * x             # d(x²)/dx = 2x
+
+y = Square.apply(torch.tensor(3.0, requires_grad=True))   # behaves like any op`,
+cap:'Define forward and backward, and your operation behaves exactly like a native PyTorch op — gradients included.'},
+{h:'Level 1: custom autograd Function (pure Python)',
+p:`<p>Ninety percent of "I need a custom op" cases end here — you define forward and backward on tensors, autograd handles the graph plumbing. <code>ctx.save_for_backward</code> stashes what backward will need.</p>`,
+code:`class SwishManual(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, x):
+        s = torch.sigmoid(x)
+        ctx.save_for_backward(x, s)
+        return x * s
+
+    @staticmethod
+    def backward(ctx, grad_out):
+        x, s = ctx.saved_tensors
+        return grad_out * (s + x * s * (1 - s))   # d/dx[x·σ(x)]
+
+# ALWAYS verify against numerical differentiation:
+x = torch.randn(20, dtype=torch.double, requires_grad=True)
+torch.autograd.gradcheck(SwishManual.apply, (x,))   # True or it raises`,
+cap:'gradcheck in float64 is non-negotiable. Wrong-but-plausible gradients train wrong-but-plausible models.'},
+{h:'Level 2: C++/CUDA extensions',
+p:`<p>When the op itself is the bottleneck — a fused kernel, an exotic scan — write it in C++/CUDA and bind it. PyTorch compiles it against its own headers so tensors cross the boundary natively.</p>`,
+code:`# setup.py
+from torch.utils.cpp_extension import CppExtension, BuildExtension
+setup(name="myops",
+      ext_modules=[CppExtension("myops", ["myops.cpp"])],
+      cmdclass={"build_ext": BuildExtension})
+
+// myops.cpp
+#include <torch/extension.h>
+torch::Tensor fused_bias_gelu(torch::Tensor x, torch::Tensor b) {
+    auto y = x + b;
+    return y * 0.5 * (1.0 + torch::erf(y / std::sqrt(2.0)));
+}
+PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
+    m.def("fused_bias_gelu", &fused_bias_gelu);
+}`},
+{h:'Level 3 (and the modern shortcut): Triton & torch.compile',
+p:`<p><strong>Triton</strong> lets you write GPU kernels in Python with block-level parallelism — it's what powers much of torch.compile's codegen and FlashAttention reimplementations. But before writing any kernel, try <code>torch.compile(model)</code>: its fusion pass may already generate the kernel you were about to hand-write.</p>
+<div class="whybox"><span class="g-tag">decision rule</span><p>Profile first (chapter 14). If the hotspot is many small pointwise ops → torch.compile. If it's a genuinely novel memory-access pattern → Triton. If it's an existing op being slow → check you're not fighting non-contiguous tensors before writing a single kernel.</p></div>`}],
+widget:null,after:[
+{h:'One blog to bookmark',
+p:`<p>Before reaching for C++ or CUDA, it pays to know exactly how far pure-Python extensions can take you.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p>PyTorch's official <a href="https://pytorch.org/docs/stable/notes/extending.html" target="_blank" rel="noopener">"Extending PyTorch"</a> notes are the canonical reference for writing custom <code>autograd.Function</code>s and modules correctly — including the save-for-backward and <code>gradcheck</code> discipline this chapter warns you never to skip.</p></div>`}],
+quiz:[
+{q:'ctx.save_for_backward exists because…',o:['Python closures leak','backward often needs forward intermediates, stored safely w.r.t. memory & versioning','it enables JIT','grads are lazy'],a:1,why:'It stores tensors with version-checking so autograd can detect illegal in-place mutation between forward and backward.'},
+{q:'Before shipping a custom backward you must run…',o:['unit tests only','torch.autograd.gradcheck in float64','torch.compile','a profiler'],a:1,why:'gradcheck compares your analytic gradient to finite differences — the only reliable correctness oracle.'}]},
+
+/* ---------- 14 PERFORMANCE ---------- */
+{id:'performance',n:'14',g:'Act III · Production',t:'Performance Optimization',read:'10 min',
+sub:'The GPU is rarely the bottleneck — your pipeline is. Profile first, then apply the big four: mixed precision, compile, better data loading, bigger effective batches.',
+body:[
+{h:'Start here: why your GPU is bored',
+p:`<p>A slow training run is usually not a slow GPU — it is a GPU sitting idle, waiting for data or waiting on Python. The whole game of <strong>performance</strong> is finding what everyone is waiting for and removing it.</p>
+<ul>
+<li><strong>bottleneck:</strong> the slowest link that caps the whole pipeline.</li>
+<li><strong>profiling:</strong> measuring where the time actually goes.</li>
+<li><strong>throughput:</strong> samples processed per second. <strong>utilisation:</strong> how busy the GPU really is.</li>
+<li><strong>mixed precision:</strong> doing math in smaller number formats to go faster.</li>
+</ul>
+<p>Analogy: a fast chef who keeps stopping because ingredients arrive late — fix the supply line, not the chef.</p>`,
+code:`# the single highest-yield speed trick: mixed precision
+scaler = torch.amp.GradScaler()
+for xb, yb in loader:
+    optimizer.zero_grad(set_to_none=True)
+    with torch.autocast("cuda", dtype=torch.float16):   # do the math in 16-bit
+        loss = loss_fn(model(xb), yb)
+    scaler.scale(loss).backward()
+    scaler.step(optimizer)
+    scaler.update()`,
+cap:'Half-precision math on tensor cores is often a free 2–3× — but always profile first so you fix the real bottleneck.'},
+{h:'Rule zero: profile before touching anything',
+p:`<p>Intuition about performance is usually wrong. The PyTorch profiler tells you whether time goes to compute, data loading, CPU-GPU transfer, or Python overhead — each has a completely different fix.</p>`,
+code:`from torch.profiler import profile, ProfilerActivity, schedule
+
+with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
+             schedule=schedule(wait=1, warmup=1, active=3),
+             on_trace_ready=torch.profiler.tensorboard_trace_handler("./prof"),
+             profile_memory=True) as prof:
+    for step, (xb, yb) in enumerate(loader):
+        train_step(xb, yb)
+        prof.step()
+        if step >= 5: break
+
+print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))`,
+cap:'Gaps between kernels in the trace = your GPU idling. That is where the money is.'},
+{h:'Mixed precision: the free 2–3×',
+p:`<p>Tensor cores chew fp16/bf16 several times faster than fp32, and activations take half the memory. <code>autocast</code> chooses per-op precision; <code>GradScaler</code> (fp16 only) prevents tiny gradients underflowing to zero. On Ampere+ GPUs, prefer <strong>bf16</strong>: same range as fp32, no scaler needed.</p>`,
+code:`scaler = torch.amp.GradScaler()          # fp16 path
+for xb, yb in loader:
+    optimizer.zero_grad(set_to_none=True)      # cheaper than zeroing
+    with torch.autocast("cuda", dtype=torch.float16):
+        loss = loss_fn(model(xb), yb)
+    scaler.scale(loss).backward()
+    scaler.step(optimizer)
+    scaler.update()
+
+# bf16: no scaler, just
+with torch.autocast("cuda", dtype=torch.bfloat16):
+    ...`},
+{h:'torch.compile: fusion for free',
+p:`<p><code>model = torch.compile(model)</code> traces your model, fuses chains of small ops into single kernels, and removes Python overhead. Typical wins: 1.3–2× training speed, larger on models with many small pointwise ops. First iterations are slow (compilation); dynamic shapes recompile — pad to buckets if your shapes vary wildly.</p>`,
+code:`model = torch.compile(model, mode="max-autotune")
+
+# other high-yield knobs
+torch.backends.cuda.matmul.allow_tf32 = True   # Ampere+: fast fp32 matmul
+loader = DataLoader(ds, num_workers=8, pin_memory=True,
+                    persistent_workers=True, prefetch_factor=4)
+xb = xb.to(device, non_blocking=True)          # overlap copy & compute`},
+{h:'Memory: when CUDA says OOM',
+p:`<ul>
+<li><strong>Gradient accumulation</strong> — simulate batch 256 with batch 32 × 8 micro-steps (divide loss by 8, step every 8th).</li>
+<li><strong>Activation checkpointing</strong> — <code>torch.utils.checkpoint</code>: don't store intermediate activations, recompute them in backward. ~30% slower, dramatically less memory.</li>
+<li><strong>set_to_none=True</strong>, delete stray references, and remember: the tensor you keep for logging (<code>losses.append(loss)</code> instead of <code>loss.item()</code>) keeps its <em>entire graph</em> alive. The classic slow memory leak.</li>
+</ul>`}],
+widget:null,after:[
+{h:'One blog to bookmark',
+p:`<p>Real speed comes from understanding whether you are compute-bound, memory-bound, or overhead-bound — not from cargo-culting tricks.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p>Horace He's <a href="https://horace.io/brrr_intro.html" target="_blank" rel="noopener">"Making Deep Learning Go Brrrr From First Principles"</a> is the definitive mental model for GPU performance: compute vs memory bandwidth vs overhead, and how to tell which one is actually holding you back before you touch a line of code.</p></div>`}],
+quiz:[
+{q:'losses.append(loss) instead of loss.item() causes…',o:['nothing','the whole autograd graph per step kept alive → memory leak','wrong loss values','a crash immediately'],a:1,why:'A live tensor holds its grad_fn chain and every saved activation behind it. .item() extracts a float and frees the graph.'},
+{q:'bf16 vs fp16: bf16\'s advantage is…',o:['more precision','same exponent range as fp32 → no GradScaler needed','smaller memory','older GPU support'],a:1,why:'bf16 keeps fp32\'s 8 exponent bits, so gradients don\'t underflow; it trades mantissa precision instead.'},
+{q:'torch.compile\'s main speed mechanism is…',o:['quantization','kernel fusion + removing Python overhead','pruning','bigger batches'],a:1,why:'It captures the graph and fuses many small ops into few kernels, cutting launch overhead and memory round-trips.'},
+{q:'Gradient accumulation over 8 micro-batches requires…',o:['8 optimizers','dividing loss by 8 and stepping every 8th batch','no changes','DDP'],a:1,why:'Backward accumulates into .grad by design (chapter 3!) — scale the loss, step and zero every N batches.'}]},
+
+/* ---------- 15 ADVANCED ARCH ---------- */
+{id:'advarch',n:'15',g:'Act IV · Frontier',t:'Advanced Architectures',read:'9 min',
+sub:'A field guide past the classics: ViT, graph networks, U-Nets, mixture-of-experts — and the shared tricks that make them tick.',
+body:[
+{h:'Start here: the same LEGO, new shapes',
+p:`<p>Once you know layers, attention, and residual connections, most "advanced" architectures are those same pieces rearranged for a new kind of data. Images become tokens (ViT), graphs pass messages between nodes (GNN), encoder-decoder pairs with skips do per-pixel work (U-Net), and many expert sub-networks share the load (MoE).</p>
+<ul>
+<li><strong>architecture:</strong> how the layers are wired together.</li>
+<li><strong>inductive bias:</strong> the assumptions baked into that wiring.</li>
+<li><strong>backbone:</strong> the reusable feature-extractor core of a model.</li>
+<li><strong>token:</strong> a single unit the model processes (a patch, a node, a word).</li>
+</ul>
+<p>Analogy: the same bricks build a castle, a bridge, and a spaceship — what changes is the arrangement, not the parts.</p>`,
+code:`import torch
+import torch.nn as nn
+
+# turn an image into a sequence of patch "tokens" — the ViT idea
+patchify = nn.Conv2d(3, 768, kernel_size=16, stride=16)   # 16×16 patches
+x = torch.randn(1, 3, 224, 224)
+tokens = patchify(x).flatten(2).transpose(1, 2)
+print(tokens.shape)   # (1, 196, 768) -> 196 patch-tokens, ready for a transformer`,
+cap:'One strided conv slices a 224×224 image into 196 patch-tokens — an image, re-spoken as a sequence.'},
+{h:'Vision Transformers',
+p:`<p>Slice an image into 16×16 patches, linearly embed each patch as a "token", prepend a learnable [CLS] token, add positions, feed a standard transformer encoder. With enough data (or good pretraining like DINO/CLIP), attention's global receptive field beats convolution's local prior.</p>`,
+code:`class PatchEmbed(nn.Module):
+    def __init__(self, img=224, patch=16, d=768):
+        super().__init__()
+        # a conv with stride=kernel IS patch slicing + embedding
+        self.proj = nn.Conv2d(3, d, kernel_size=patch, stride=patch)
+    def forward(self, x):                 # (B,3,224,224)
+        x = self.proj(x)                  # (B,768,14,14)
+        return x.flatten(2).transpose(1, 2)   # (B,196,768) — tokens`},
+{h:'Graph Neural Networks',
+p:`<p>When data is a graph — molecules, social networks, meshes — GNNs generalise convolution to <strong>message passing</strong>: each node aggregates transformed features from its neighbours, layer by layer. K layers = K-hop receptive field. (In practice, use PyTorch Geometric.)</p>`,
+code:`class GCNLayer(nn.Module):
+    def __init__(self, d_in, d_out):
+        super().__init__()
+        self.lin = nn.Linear(d_in, d_out)
+    def forward(self, x, adj_norm):        # adj_norm: D^-½(A+I)D^-½
+        return F.relu(adj_norm @ self.lin(x))   # aggregate neighbours`},
+{h:'U-Net: the dense-prediction workhorse',
+p:`<p>Segmentation, depth, and diffusion denoisers need per-pixel output. U-Net pairs a downsampling encoder with an upsampling decoder and — the crucial part — <strong>skip connections at every resolution</strong>, concatenating encoder features into the decoder so fine spatial detail survives the bottleneck.</p>`},
+{h:'Mixture of Experts',
+p:`<p>Scale parameters without scaling compute: replace each MLP with N expert MLPs plus a learned <strong>router</strong> that sends each token to its top-k experts. A 8×7B MoE has ~47B parameters but the per-token FLOPs of a ~13B dense model. The engineering tax: load-balancing losses so the router doesn't collapse onto favourite experts.</p>`,
+code:`class MoE(nn.Module):
+    def __init__(self, d, n_exp=8, k=2):
+        super().__init__()
+        self.router = nn.Linear(d, n_exp)
+        self.experts = nn.ModuleList([FeedForward(d) for _ in range(n_exp)])
+        self.k = k
+    def forward(self, x):                       # x: (tokens, d)
+        gates = self.router(x).softmax(-1)      # (tokens, n_exp)
+        topv, topi = gates.topk(self.k, dim=-1)
+        out = torch.zeros_like(x)
+        for slot in range(self.k):              # dispatch per expert
+            for e, expert in enumerate(self.experts):
+                m = topi[:, slot] == e
+                if m.any():
+                    out[m] += topv[m, slot, None] * expert(x[m])
+        return out`,
+cap:'Educational version — production MoE lives or dies on batched expert dispatch and balancing losses.'}],
+widget:null,after:[
+{h:'One blog to bookmark',
+p:`<p>Mixture-of-Experts is how modern models grow to hundreds of billions of parameters without a matching jump in compute — a pattern worth understanding well.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p>Hugging Face's <a href="https://huggingface.co/blog/moe" target="_blank" rel="noopener">"Mixture of Experts Explained"</a> covers routing, top-k dispatch and load-balancing losses with clear visuals — the practical companion to the toy MoE in this chapter.</p></div>`}],
+quiz:[
+{q:'ViT patch embedding is implemented most naturally as…',o:['a for-loop over patches','Conv2d with kernel_size = stride = patch','pooling','an RNN scan'],a:1,why:'A stride-16 16×16 conv computes exactly one linear projection per non-overlapping patch.'},
+{q:'K message-passing layers give each node information from…',o:['the whole graph','its K-hop neighbourhood','only itself','random nodes'],a:1,why:'Each layer extends reach by one hop — the graph analogue of receptive field growth.'},
+{q:'MoE models decouple…',o:['depth from width','parameter count from per-token compute','training from inference','attention from MLPs'],a:1,why:'Only top-k experts run per token, so total parameters can grow ~N× while FLOPs grow ~k×.'}]},
+
+/* ---------- 16 RL ---------- */
+{id:'rl',n:'16',g:'Act IV · Frontier',t:'Reinforcement Learning',read:'9 min',
+sub:'No labels, only consequences. An agent acts, the world scores it, and gradients flow through expectations of reward.',
+body:[
+{h:'Start here: learning from consequences',
+p:`<p>There are no labelled answers in reinforcement learning — only an agent trying things in an environment and receiving rewards or penalties. The agent's job is to discover which actions lead to the most reward over time, even when the payoff arrives much later.</p>
+<ul>
+<li><strong>agent:</strong> the learner and decision-maker. <strong>environment:</strong> the world it acts in.</li>
+<li><strong>state:</strong> the current situation. <strong>action:</strong> a choice the agent makes.</li>
+<li><strong>reward:</strong> the score signal after an action.</li>
+<li><strong>policy:</strong> the agent's strategy, mapping state → action.</li>
+<li><strong>return:</strong> the total (discounted) future reward.</li>
+</ul>
+<p>Analogy: training a dog with treats — there is no answer key, just outcomes that make some behaviours more likely.</p>`,
+code:`# the core loop shared by every RL algorithm
+state, done = env.reset(), False
+while not done:
+    action = policy(state)                            # decide
+    next_state, reward, done, _ = env.step(action)    # act, then observe
+    # ...store (state, action, reward) and later learn from it
+    state = next_state`,
+cap:'state → action → reward → next state, repeated. Everything else in RL is how you learn from that stream.'},
+{h:'The loop and the objective',
+p:`<p>State → action → reward → next state, repeat. The agent maximises expected <strong>discounted return</strong> G_t = Σ γᵏ r_{t+k}. Two families: <strong>value-based</strong> (learn how good actions are, act greedily — DQN) and <strong>policy-based</strong> (parameterise the policy directly, ascend its expected return — REINFORCE, PPO).</p>`},
+{h:'Policy gradients in one screen',
+p:`<p>You cannot differentiate through the environment, but the log-derivative trick gives an estimator anyway: <em>increase the log-probability of actions in proportion to how well things went</em>. Subtracting a baseline (state value) slashes variance without adding bias — that's Advantage Actor-Critic.</p>`,
+code:`# REINFORCE with baseline — the conceptual core of policy RL
+probs  = policy(states)                       # (T, n_actions)
+dist   = torch.distributions.Categorical(probs)
+logp   = dist.log_prob(actions)               # (T,)
+
+returns = compute_discounted_returns(rewards, gamma=0.99)
+adv     = returns - value_net(states).squeeze()   # advantage
+
+policy_loss = -(logp * adv.detach()).mean()   # ascend: minimise negative
+value_loss  = F.mse_loss(value_net(states).squeeze(), returns)
+entropy     = dist.entropy().mean()           # exploration bonus
+
+loss = policy_loss + 0.5 * value_loss - 0.01 * entropy
+loss.backward()`,
+cap:'adv.detach() matters: the advantage weights the policy gradient; it must not receive one itself.'},
+{h:'DQN and PPO: the two workhorses',
+p:`<ul>
+<li><strong>DQN</strong> — Q-network + <em>replay buffer</em> (decorrelate samples) + <em>target network</em> (a slow copy providing stable bootstrap targets). Discrete actions.</li>
+<li><strong>PPO</strong> — policy gradient with a <em>clipped ratio</em> objective that forbids destructively large policy updates. The default in continuous control and the algorithm behind RLHF for LLMs.</li>
+</ul>`,
+code:`# PPO's clipped objective — the whole trick in 4 lines
+ratio = torch.exp(logp_new - logp_old)          # π_new / π_old
+unclipped = ratio * adv
+clipped   = torch.clamp(ratio, 1 - 0.2, 1 + 0.2) * adv
+loss = -torch.min(unclipped, clipped).mean()    # pessimistic bound`},
+{h:'Why RL is hard',
+p:`<div class="gotcha"><span class="g-tag">reality check</span><p>Non-stationary data (the policy changes what it sees), delayed credit assignment, and extreme seed variance. Standard advice: fix seeds, run ≥5 of them, normalise observations and advantages, and suspect your reward function before your algorithm.</p></div>`}],
+widget:null,after:[
+{h:'One blog to bookmark',
+p:`<p>RL has a steep vocabulary and many algorithms; one resource teaches both the theory and the code together.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p>OpenAI's <a href="https://spinningup.openai.com/en/latest/" target="_blank" rel="noopener">"Spinning Up in Deep RL"</a> is the best free curriculum for the field — clear derivations of policy gradients, plus clean reference implementations of VPG, DQN, PPO and more that mirror the code in this chapter.</p></div>`}],
+quiz:[
+{q:'The replay buffer in DQN exists to…',o:['save memory','break temporal correlation in training samples','store the policy','speed up envs'],a:1,why:'Consecutive transitions are highly correlated; SGD assumes i.i.d.-ish samples. Random replay restores that.'},
+{q:'PPO clips the probability ratio to…',o:['bound memory','prevent destructively large policy updates','make actions discrete','remove the baseline'],a:1,why:'A single huge update can collapse a policy irrecoverably; the clip makes improvement conservative.'},
+{q:'In policy_loss = -(logp * adv.detach()).mean(), detach prevents…',o:['NaNs','value-gradient leaking into the policy term','exploration','entropy collapse'],a:1,why:'The advantage is a weight, not a differentiable target here; the value net trains via its own MSE loss.'}]},
+
+/* ---------- 17 MODEL OPT ---------- */
+{id:'modelopt',n:'17',g:'Act IV · Frontier',t:'Quantization, Pruning & Distillation',read:'9 min',
+sub:'Make it small, make it fast, keep it smart. The compression trio behind every model that runs on a phone.',
+body:[
+{h:'Start here: smaller, faster, still smart',
+p:`<p>A trained model is often far bigger and slower than it needs to be. Three classic techniques shrink it with little accuracy loss: store numbers in fewer bits (<strong>quantization</strong>), delete weights that barely matter (<strong>pruning</strong>), and train a small model to imitate a big one (<strong>distillation</strong>).</p>
+<ul>
+<li><strong>quantization:</strong> lower-precision weights, e.g. int8 instead of float32.</li>
+<li><strong>pruning:</strong> removing individual weights or whole channels.</li>
+<li><strong>distillation:</strong> a small "student" learns from a big "teacher".</li>
+<li><strong>sparsity:</strong> the fraction of weights that are zero.</li>
+</ul>
+<p>Analogy: packing for a trip — swap bulky items for compact ones, leave behind what you never use, and let an expert show you the essentials.</p>`,
+code:`import torch
+import torch.nn as nn
+
+# dynamic quantization: 32-bit weights -> 8-bit, in one line
+qmodel = torch.ao.quantization.quantize_dynamic(
+    model, {nn.Linear}, dtype=torch.qint8)
+# typical result: ~4× smaller on disk, 2–3× faster on CPU, <1% accuracy drop`,
+cap:'The easiest win of the trio: one line, no retraining, a measurable speedup — just always verify the accuracy.'},
+{h:'Quantization: int8 is (usually) enough',
+p:`<p>Store weights (and possibly activations) in 8-bit integers with a scale/zero-point mapping back to float. Three tiers of effort: <strong>dynamic</strong> (weights int8, activations quantized on the fly — one line, great for linear/LSTM-heavy models), <strong>static PTQ</strong> (calibrate activation ranges on sample data), <strong>QAT</strong> (simulate quantization during training with straight-through estimators — best accuracy, most work). LLM-land adds 4-bit weight-only schemes (GPTQ, AWQ, bitsandbytes NF4).</p>`,
+code:`# dynamic quantization — the one-liner
+qmodel = torch.ao.quantization.quantize_dynamic(
+    model, {nn.Linear, nn.LSTM}, dtype=torch.qint8)
+
+# typical outcome: ~4× smaller, 2–3× faster CPU inference,
+# accuracy drop usually < 1% — measure it, always.`},
+{h:'Pruning: most weights are dead weight',
+p:`<p>Trained networks are heavily over-parameterised; removing 80–90% of the smallest-magnitude weights often costs little accuracy after fine-tuning. <strong>Unstructured</strong> pruning (individual weights) gives great compression on paper but needs sparse kernels to get real speed; <strong>structured</strong> pruning (whole channels/heads) yields dense, actually-faster models.</p>`,
+code:`import torch.nn.utils.prune as prune
+
+for module in model.modules():
+    if isinstance(module, nn.Linear):
+        prune.l1_unstructured(module, name="weight", amount=0.8)
+
+# masks are applied via forward hooks; make it permanent:
+for module in model.modules():
+    if isinstance(module, nn.Linear):
+        prune.remove(module, "weight")
+# then fine-tune a few epochs to recover accuracy`},
+{h:'Distillation: a small student, a big teacher',
+p:`<p>Train a small model to match a large model's <em>soft</em> output distribution, not just the hard labels. The teacher's "wrong-class" probabilities (a 3 that's 20% likely to be an 8) carry structure the one-hot label destroys. Temperature softens both distributions so that dark knowledge is visible.</p>`,
+code:`def distill_loss(student_logits, teacher_logits, labels, T=4.0, alpha=0.7):
+    soft = F.kl_div(
+        F.log_softmax(student_logits / T, dim=-1),
+        F.softmax(teacher_logits / T, dim=-1),
+        reduction="batchmean") * T * T          # gradient scale fix
+    hard = F.cross_entropy(student_logits, labels)
+    return alpha * soft + (1 - alpha) * hard`,
+cap:'The T² factor compensates for the 1/T² the temperature introduces into gradients. Everyone forgets it once.'}],
+widget:null,after:[
+{h:'One blog to bookmark',
+p:`<p>Compression really matters at inference time for large models, where every technique in this chapter compounds.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p>Lilian Weng's <a href="https://lilianweng.github.io/posts/2023-01-10-inference-optimization/" target="_blank" rel="noopener">"Large Transformer Model Inference Optimization"</a> surveys quantization, pruning, distillation and sparsity in one place, with the trade-offs and when each actually pays off in practice.</p></div>`}],
+quiz:[
+{q:'Dynamic quantization quantizes…',o:['weights and activations offline','weights offline, activations on the fly','activations only','gradients'],a:1,why:'Weights are converted once; activation ranges are computed per batch at inference. Zero calibration needed.'},
+{q:'Structured beats unstructured pruning for real latency because…',o:['it removes more weights','dense hardware kernels can exploit removed channels','it needs no fine-tuning','it is lossless'],a:1,why:'Random zeros still get multiplied on dense hardware; removing whole channels shrinks the actual matmul.'},
+{q:'Distillation temperature T > 1 serves to…',o:['speed training','reveal the teacher\'s inter-class similarity structure','regularise weights','shrink logits for stability'],a:1,why:'Softened distributions expose "dark knowledge" — relative probabilities among wrong classes.'}]},
+
+/* ---------- 18 META ---------- */
+{id:'meta',n:'18',g:'Act IV · Frontier',t:'Meta-Learning',read:'8 min',
+sub:'Learning to learn: train across many small tasks so that a brand-new task takes five examples, not fifty thousand.',
+body:[
+{h:'Start here: learning to learn',
+p:`<p>Normal training makes a model good at <em>one</em> task. <strong>Meta-learning</strong> makes a model good at picking up <em>new</em> tasks fast — so a brand-new problem takes five examples instead of fifty thousand. It trains across many small tasks and optimises for how quickly it adapts.</p>
+<ul>
+<li><strong>task:</strong> one small, self-contained learning problem.</li>
+<li><strong>support set:</strong> the few labelled examples to learn a new task from.</li>
+<li><strong>query set:</strong> the examples the model is then graded on.</li>
+<li><strong>few-shot:</strong> learning from only a handful of examples.</li>
+<li><strong>adaptation:</strong> quickly adjusting to a new task.</li>
+</ul>
+<p>Analogy: a seasoned traveller who reads any new city's transit map in minutes — not because this map is easy, but because they have learned dozens before.</p>`,
+code:`# a few-shot "episode": N classes, K examples each (the support set)
+support_x, support_y = sample_task(n_way=5, k_shot=1)   # 5 classes, 1 example each
+query_x,   query_y   = sample_task_queries()            # what we are graded on
+
+# meta-learning trains so that AFTER adapting on (support),
+# the model does well on (query) -- across thousands of such episodes.`,
+cap:'The model is scored not on raw accuracy, but on accuracy after adapting to a tiny support set.'},
+{h:'The few-shot setup',
+p:`<p>An N-way K-shot episode: N classes, K labelled examples each (support set), plus queries to classify. Meta-training samples thousands of such episodes; the model is optimised for <em>post-adaptation</em> performance, not raw performance.</p>`},
+{h:'MAML: optimise for fine-tunability',
+p:`<p>Model-Agnostic Meta-Learning finds initial weights θ such that <strong>one or two gradient steps</strong> on a new task's support set yields good query accuracy. The outer loop differentiates through the inner adaptation — gradients of gradients, which PyTorch handles via <code>create_graph=True</code>.</p>`,
+code:`meta_opt = torch.optim.Adam(model.parameters(), lr=1e-3)
+
+for tasks in meta_batches:
+    meta_loss = 0
+    for support, query in tasks:
+        # inner loop: adapt (functionally, keeping the graph)
+        fast = {n: p for n, p in model.named_parameters()}
+        for _ in range(inner_steps):
+            loss = F.cross_entropy(functional_forward(fast, *support[:1]), support[1])
+            grads = torch.autograd.grad(loss, fast.values(), create_graph=True)
+            fast = {n: p - 0.01 * g for (n, p), g in zip(fast.items(), grads)}
+        # outer loss: how good is the ADAPTED model?
+        meta_loss += F.cross_entropy(functional_forward(fast, query[0]), query[1])
+    meta_opt.zero_grad()
+    meta_loss.backward()          # backprops THROUGH the inner updates
+    meta_opt.step()`,
+cap:'create_graph=True builds a graph of the inner update itself — second-order gradients. Costly; first-order MAML and Reptile skip it and often work nearly as well.'},
+{h:'Metric learning: skip the inner loop',
+p:`<p><strong>Prototypical Networks</strong>: embed everything, average each class's support embeddings into a prototype, classify queries by nearest prototype. No adaptation gradients at all, embarrassingly effective, the baseline to beat.</p>`,
+code:`emb_s = encoder(support_x)               # (N*K, d)
+protos = emb_s.view(N, K, -1).mean(1)     # (N, d) — class prototypes
+dists  = torch.cdist(encoder(query_x), protos)   # (Q, N)
+logits = -dists                            # closer ⇒ larger logit
+loss = F.cross_entropy(logits, query_y)`}],
+widget:null,after:[
+{h:'One blog to bookmark',
+p:`<p>Meta-learning splits into a few families (optimization-based, metric-based, model-based); one survey maps them cleanly.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p>Lilian Weng's <a href="https://lilianweng.github.io/posts/2018-11-30-meta-learning/" target="_blank" rel="noopener">"Meta-Learning: Learning to Learn Fast"</a> lays out MAML, Prototypical Networks and the rest side by side, so you can see exactly how the inner/outer-loop idea in this chapter relates to the metric-based shortcut.</p></div>`}],
+quiz:[
+{q:'MAML\'s outer objective measures the model…',o:['before adaptation','after a few inner gradient steps on the support set','on training accuracy','on parameter norm'],a:1,why:'The whole point: initial weights are judged by how well they fine-tune, requiring gradients through the update.'},
+{q:'Prototypical networks classify a query by…',o:['fine-tuning per episode','distance to the mean support embedding per class','a learned router','decision trees'],a:1,why:'Nearest-prototype in embedding space — no inner-loop optimisation whatsoever.'}]},
+
+/* ---------- 19 NAS ---------- */
+{id:'nas',n:'19',g:'Act IV · Frontier',t:'Neural Architecture Search',read:'7 min',
+sub:'Let gradient descent design the network too. From reinforcement-learned controllers to DARTS to today\'s hardware-aware search.',
+body:[
+{h:'Start here: letting the machine design the machine',
+p:`<p>Choosing how many layers, which operations, and how wide they are is usually a human guessing game. <strong>Neural Architecture Search (NAS)</strong> automates it: define a space of possible networks, then search that space for the best one — using reinforcement learning, evolution, or gradient descent.</p>
+<ul>
+<li><strong>search space:</strong> the set of all architectures you allow.</li>
+<li><strong>search strategy:</strong> how you explore that space.</li>
+<li><strong>candidate operation:</strong> a possible building block, e.g. conv3×3 or pooling.</li>
+<li><strong>supernet:</strong> one big network that contains all candidates at once.</li>
+<li><strong>proxy:</strong> a cheap way to estimate how good a candidate is without full training.</li>
+</ul>
+<p>Analogy: instead of designing one house, you specify the allowed rooms and let a program lay out the best floor plan.</p>`,
+code:`import torch
+import torch.nn as nn
+
+# a "mixed" edge: let training decide which op to keep (the DARTS idea)
+ops = nn.ModuleList([nn.Conv2d(8, 8, 3, padding=1), nn.Identity()])
+alpha = nn.Parameter(torch.zeros(len(ops)))       # learnable preference
+
+def mixed(x):
+    w = alpha.softmax(0)                          # weights over candidate ops
+    return sum(wi * op(x) for wi, op in zip(w, ops))`,
+cap:'Make the choice of operation continuous (a softmax over candidates) and gradient descent can design the network too.'},
+{h:'The three ingredients',
+p:`<p>Every NAS method chooses: a <strong>search space</strong> (which architectures are expressible — cells of candidate ops, widths, depths), a <strong>search strategy</strong> (RL controller, evolution, gradient descent), and a <strong>performance estimator</strong> (full training is too slow, so: weight-sharing supernets, few-epoch proxies, or learned predictors).</p>`},
+{h:'DARTS: make architecture differentiable',
+p:`<p>Put <em>all</em> candidate operations on every edge, mixed by softmaxed architecture weights α. Now the architecture is continuous — train weights w and architecture α jointly by gradient descent, then discretise by keeping each edge's argmax op.</p>`,
+code:`class MixedOp(nn.Module):
+    def __init__(self, C):
+        super().__init__()
+        self.ops = nn.ModuleList([
+            nn.Conv2d(C, C, 3, padding=1),
+            nn.Conv2d(C, C, 5, padding=2),
+            nn.MaxPool2d(3, stride=1, padding=1),
+            nn.Identity(),
+        ])
+        self.alpha = nn.Parameter(torch.zeros(len(self.ops)))
+
+    def forward(self, x):
+        w = self.alpha.softmax(0)
+        return sum(wi * op(x) for wi, op in zip(w, self.ops))`,
+cap:'Bilevel in spirit: update α on validation loss, w on training loss — or everything collapses to whatever memorises fastest (often skip-connections; a known DARTS failure mode).'},
+{h:'What actually ships',
+p:`<p>Production NAS is mostly <strong>hardware-aware</strong>: search spaces of mobile-friendly blocks with latency measured on the target device inside the objective (EfficientNet, MobileNetV3, MCUNet lineage). The honest caveat: a well-tuned hand-designed baseline is brutally hard to beat, and search costs must be amortised over many deployments to pay off.</p>`}],
+widget:null,after:[
+{h:'One blog to bookmark',
+p:`<p>NAS spans RL controllers, evolution and differentiable methods — a map helps before diving into any one.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p>Lilian Weng's <a href="https://lilianweng.github.io/posts/2020-08-06-nas/" target="_blank" rel="noopener">"Neural Architecture Search"</a> organises the whole field around the three ingredients in this chapter — search space, strategy and performance estimation — and explains DARTS and weight-sharing supernets in depth.</p></div>`}],
+quiz:[
+{q:'DARTS makes search differentiable by…',o:['training every architecture','a softmax-weighted mixture of all candidate ops per edge','evolution','RL controllers'],a:1,why:'Continuous relaxation: architecture parameters α mix ops, so ∂loss/∂α exists and SGD applies.'},
+{q:'Weight-sharing supernets exist because…',o:['memory limits','fully training every candidate is computationally impossible','they improve accuracy','hardware requires it'],a:1,why:'Candidates inherit weights from one supernet, making evaluation cheap enough to search at all.'}]},
+
+/* ---------- 20 BAYESIAN ---------- */
+{id:'bayesian',n:'20',g:'Act IV · Frontier',t:'Bayesian Deep Learning',read:'8 min',
+sub:'A confident wrong answer is worse than an honest "I don\'t know." Networks that output distributions, not just point estimates.',
+body:[
+{h:'Start here: knowing what you do not know',
+p:`<p>A normal classifier always gives an answer, often a confident one, even on inputs it has never seen — which is dangerous in medicine or self-driving. <strong>Bayesian deep learning</strong> makes models report a confidence alongside each prediction, and honestly say "I am not sure."</p>
+<ul>
+<li><strong>uncertainty:</strong> how unsure the model is about a prediction.</li>
+<li><strong>aleatoric:</strong> irreducible noise in the data itself.</li>
+<li><strong>epistemic:</strong> the model's own ignorance — reducible with more data.</li>
+<li><strong>calibration:</strong> confidence actually matching real accuracy.</li>
+<li><strong>posterior:</strong> a distribution over possible models, not a single one.</li>
+</ul>
+<p>Analogy: a good doctor who says "likely a cold, but I want a test to be sure" instead of guessing with false confidence.</p>`,
+code:`# uncertainty for almost free: keep dropout ON and predict many times
+model.train()                       # dropout stays active on purpose
+with torch.no_grad():
+    runs = torch.stack([model(x).softmax(-1) for _ in range(30)])
+mean, spread = runs.mean(0), runs.std(0)   # the prediction, and how unsure it is`,
+cap:'If 30 dropout-perturbed runs disagree a lot, the model is telling you it is uncertain.'},
+{h:'Two kinds of uncertainty',
+p:`<p><strong>Aleatoric</strong> — noise in the data itself (blurry image, ambiguous label); more data won't help. <strong>Epistemic</strong> — the model's own ignorance (inputs unlike training data); more data <em>does</em> help, and this is the one that flags out-of-distribution inputs. Standard softmax confidence measures neither reliably: networks are notoriously overconfident far from their training set.</p>`},
+{h:'MC Dropout: uncertainty for one extra line',
+p:`<p>Keep dropout <em>on at inference</em> and run T stochastic forward passes: the mean is your prediction, the spread is (approximate) epistemic uncertainty. Theoretically a variational approximation; practically the cheapest uncertainty you can buy.</p>`,
+code:`def mc_predict(model, x, T=30):
+    model.train()                    # keep dropout active — on purpose!
+    with torch.no_grad():
+        preds = torch.stack([model(x).softmax(-1) for _ in range(T)])
+    return preds.mean(0), preds.std(0)      # prediction, uncertainty
+
+# Deep ensembles: same idea, stronger — train 5 models
+# from different seeds and average. Consistently the most
+# reliable uncertainty in practice, at 5× the cost.`},
+{h:'Proper Bayesian layers: weights as distributions',
+p:`<p>Bayes-by-backprop learns a mean and variance <em>per weight</em>, sampling weights each forward pass via the reparameterisation trick (chapter 9 rhyme!) and adding a KL term pulling the posterior toward the prior — the ELBO objective. Doubles the parameters, complicates training; used where calibrated uncertainty is the product (medicine, autonomous systems, active learning).</p>`,
+code:`class BayesLinear(nn.Module):
+    def __init__(self, d_in, d_out):
+        super().__init__()
+        self.w_mu  = nn.Parameter(torch.randn(d_out, d_in) * 0.05)
+        self.w_rho = nn.Parameter(torch.full((d_out, d_in), -4.0))
+    def forward(self, x):
+        sigma = F.softplus(self.w_rho)               # ensure > 0
+        w = self.w_mu + sigma * torch.randn_like(sigma)   # sample weights
+        return F.linear(x, w)`},
+{h:'Whatever you use: calibrate',
+p:`<div class="whybox"><span class="g-tag">the cheap win</span><p><strong>Temperature scaling</strong>: after training, fit one scalar T on validation so that softmax(logits/T) probabilities match empirical frequencies. One parameter, minutes of work, fixes most of a network's overconfidence. Measure with Expected Calibration Error.</p></div>`}],
+widget:null,after:[
+{h:'One blog to bookmark',
+p:`<p>The idea that dropout at test time approximates Bayesian inference is subtle — it helps to read it from the source.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p>Yarin Gal's <a href="http://mlg.eng.cam.ac.uk/yarin/blog_3d801aa532c1ce.html" target="_blank" rel="noopener">"What My Deep Model Doesn't Know"</a> introduces MC Dropout intuitively, showing why standard networks are overconfident far from their training data and how a couple of extra forward passes recover honest uncertainty.</p></div>`}],
+quiz:[
+{q:'Epistemic uncertainty is the kind that…',o:['comes from label noise','shrinks with more training data and flags OOD inputs','only exists in regression','softmax already captures'],a:1,why:'It reflects model ignorance — reducible with data, and exactly what you want high on inputs unlike training data.'},
+{q:'MC Dropout obtains uncertainty by…',o:['ensembling checkpoints','multiple stochastic forward passes with dropout active at test time','temperature scaling','pruning'],a:1,why:'Each pass samples a different thinned network; disagreement across passes approximates epistemic uncertainty.'},
+{q:'Temperature scaling changes…',o:['accuracy and calibration','calibration only — argmax is unchanged','the architecture','training dynamics'],a:1,why:'Dividing logits by a scalar preserves their order (same predictions) while reshaping confidence.'}]},
+
+/* ---------- 21 RESEARCH ---------- */
+{id:'research',n:'21',g:'Act IV · Frontier',t:'Research Frontiers',read:'8 min',
+sub:'The syllabus ends; the field doesn\'t. A map of where the interesting problems live, and how to read your way into them.',
+body:[
+{h:'Start here: the syllabus ends, the field does not',
+p:`<p>You now hold the full stack: tensors, autograd, training, the big architectures, scaling, and compression. The <strong>frontier</strong> is where these combine and break in new ways — self-supervised pretraining, ever-cheaper attention, and adapting giant models on a budget. The final skill is learning to read your way into new work.</p>
+<ul>
+<li><strong>self-supervised learning:</strong> labels created from the data itself, no humans.</li>
+<li><strong>foundation model:</strong> a large pretrained model reused across many tasks.</li>
+<li><strong>fine-tuning:</strong> lightly adapting a pretrained model to your task.</li>
+<li><strong>parameter-efficient tuning:</strong> adapting with a tiny number of new weights (e.g. LoRA).</li>
+</ul>
+<p>Analogy: you have finished driving school; the open road is where you actually become a driver.</p>`,
+code:`# LoRA: freeze the big pretrained weight, train a tiny low-rank add-on
+A = torch.nn.Parameter(torch.randn(8, 768) * 0.01)   # rank-8 "down" projection
+B = torch.nn.Parameter(torch.zeros(768, 8))          # rank-8 "up" (starts at 0)
+
+def adapted(x, base_linear):
+    return base_linear(x) + (x @ A.T @ B.T)          # base stays frozen; only A,B learn`,
+cap:'Training under 1% of the parameters (just A and B) can rival full fine-tuning — how giant models get adapted on one GPU.'},
+{h:'Self-supervised learning: labels are a bottleneck',
+p:`<p>The pretraining revolution: design a task where the data labels itself. Masked prediction (BERT, MAE: hide patches/tokens, reconstruct), contrastive learning (SimCLR/CLIP: pull augmented views or matched image-text pairs together, push others apart), and self-distillation (DINO). This is why "foundation model + light fine-tune" replaced "train from scratch" as the default workflow you learned in chapter 6.</p>`,
+code:`# the InfoNCE contrastive loss at the heart of SimCLR/CLIP
+def info_nce(z1, z2, tau=0.07):
+    z1, z2 = F.normalize(z1, dim=-1), F.normalize(z2, dim=-1)
+    logits = z1 @ z2.T / tau              # (B, B) similarity matrix
+    labels = torch.arange(z1.size(0), device=z1.device)
+    return F.cross_entropy(logits, labels)   # diagonal = positives`},
+{h:'The efficiency frontier',
+p:`<p>Attention's O(T²) wall (chapter 8) spawned an ecosystem: FlashAttention (exact, IO-aware kernels), sliding-window and sparse attention, <strong>state-space models</strong> (Mamba-style selective SSMs: linear-time sequence modelling), and aggressive quantization/KV-cache compression for inference. Parameter-efficient fine-tuning — <strong>LoRA</strong> chief among them — made adapting billion-parameter models a consumer-GPU activity:</p>`,
+code:`class LoRALinear(nn.Module):
+    """W stays frozen; train a rank-r update: W + (B @ A) * scale."""
+    def __init__(self, base: nn.Linear, r=8, alpha=16):
+        super().__init__()
+        self.base = base
+        for p in self.base.parameters():
+            p.requires_grad = False
+        self.A = nn.Parameter(torch.randn(r, base.in_features) * 0.01)
+        self.B = nn.Parameter(torch.zeros(base.out_features, r))
+        self.scale = alpha / r
+    def forward(self, x):
+        return self.base(x) + (x @ self.A.T @ self.B.T) * self.scale`,
+cap:'B initialised to zero ⇒ training starts exactly at the pretrained model. Elegant.'},
+{h:'Open problems worth your career',
+p:`<ul>
+<li><strong>Reasoning & planning</strong> — test-time compute, search + learning hybrids, process supervision.</li>
+<li><strong>Multimodality</strong> — unified tokenisers for text/image/audio/video/action; world models.</li>
+<li><strong>Alignment & interpretability</strong> — RLHF and successors; mechanistic interpretability of circuits inside trained networks.</li>
+<li><strong>Data</strong> — curation, synthetic data flywheels, and contamination: increasingly <em>the</em> lever, more than architecture.</li>
+<li><strong>Continual learning</strong> — escaping catastrophic forgetting without full retraining.</li>
+</ul>`},
+{h:'How to keep learning',
+p:`<p>Re-implement one important paper per month in raw PyTorch — everything you've built here (attention, VAEs, LoRA, PPO) is a paper re-implementation in miniature. Read code before papers when both exist. And keep the chapter-4 ritual forever: overfit one batch first. Researchers at every level still get caught by shape bugs; the ones who ship are the ones who test.</p>
+<div class="whybox"><span class="g-tag">you made it</span><p>You now hold the full stack: tensors → autograd → training → architectures → scale → frontier. The playground stays open — go break things.</p></div>`}],
+widget:null,after:[
+{h:'One blog to bookmark',
+p:`<p>The frontier moves fast; the durable skill is a habit for keeping up without drowning.</p>
+<div class="whybox"><span class="g-tag">one great read</span><p>Sebastian Raschka's <a href="https://magazine.sebastianraschka.com/" target="_blank" rel="noopener">"Ahead of AI"</a> distills the latest research and techniques into readable, code-adjacent explanations — an ideal standing subscription for turning the fire-hose of new papers into things you can actually use.</p></div>`}],
+quiz:[
+{q:'In InfoNCE, the positives live…',o:['in a separate batch','on the diagonal of the similarity matrix','in the largest logits','nowhere — it\'s unsupervised'],a:1,why:'Row i\'s match is column i (the paired view); cross-entropy with labels=arange makes diagonals the targets.'},
+{q:'LoRA trains…',o:['all weights at low precision','a small low-rank additive update while the base stays frozen','only the last layer','the optimizer state'],a:1,why:'ΔW = B·A with rank r ≪ d cuts trainable params by ~1000× while matching full fine-tuning surprisingly often.'},
+{q:'Initialising LoRA\'s B to zero guarantees…',o:['faster convergence','the model starts identical to the pretrained one','orthogonality','sparsity'],a:1,why:'B·A = 0 at step 0, so the adapted model equals the base model exactly — training departs smoothly from it.'}]}
+);
+
+/* =====================================================
+   RENDER — sidebar, home, chapters, quiz, router
+   ===================================================== */
+const GROUPS=[...new Set(CH.map(c=>c.g))];
+function renderSidebar(){
+  const sb=$('#sidebar');
+  let h=`<button class="side-home" onclick="location.hash='#/'">⌂ &nbsp;Playground home</button>
+  <button class="side-home" id="blogTab" onclick="location.hash='#/blogs'">▤ &nbsp;Reading list &nbsp;<span class="mono" style="margin-left:auto;color:var(--ink-faint)">${collectBlogs().length}</span></button>`;
+  for(const g of GROUPS){
+    const chs=CH.filter(c=>c.g===g);
+    const done=chs.filter(c=>state.done.has(c.id)).length;
+    h+=`<div class="act"><div class="act-head"><span>${g}</span><b>${done}/${chs.length}</b></div>`;
+    for(const c of chs){
+      h+=`<button class="ch-link" data-ch="${c.id}">
+        <span class="ch-num">${c.n}</span>
+        <span class="ch-title-s">${c.t}</span>
+        <span class="ch-dot ${state.done.has(c.id)?'done':''}"></span></button>`;
+    }
+    h+='</div>';
+  }
+  sb.innerHTML=h;
+  $$('.ch-link',sb).forEach(b=>b.addEventListener('click',()=>{
+    location.hash='#/ch/'+b.dataset.ch;
+    $('#sidebar').classList.remove('open');
+  }));
+}
+function markActive(id){
+  $$('.ch-link').forEach(b=>b.classList.toggle('active',b.dataset.ch===id));
+  const bt=$('#blogTab');
+  if(bt){
+    const on=id==='__blogs__';
+    bt.style.borderColor=on?'var(--ember)':'var(--ink)';
+    bt.style.background=on?'var(--ember-soft)':'var(--card)';
+  }
+}
+
+/* ---------- reading list (blogs collected from every chapter) ---------- */
+function collectBlogs(){
+  const out=[], tmp=document.createElement('div');
+  for(const c of CH){
+    for(const s of [...(c.body||[]),...(c.after||[])]){
+      if(s.h!=='One blog to bookmark' || !s.p) continue;
+      tmp.innerHTML=s.p;
+      const a=tmp.querySelector('a'), box=tmp.querySelector('.whybox p');
+      if(!a) continue;
+      out.push({ch:c, url:a.href, title:a.textContent.trim(),
+                desc:box?box.textContent.trim():''});
+    }
+  }
+  return out;
+}
+function renderBlogs(){
+  const m=$('#main');
+  const blogs=collectBlogs();
+  let h=`
+  <div class="eyebrow">Reading list · ${blogs.length} hand-picked blogs</div>
+  <h1 class="ch-h">The Reading List</h1>
+  <p class="ch-sub">One outstanding external read per chapter — the blogs and guides that make each topic click. Every link opens in a new tab; the playground stays right here.</p>`;
+  for(const g of GROUPS){
+    const items=blogs.filter(b=>b.ch.g===g);
+    if(!items.length) continue;
+    h+=`<h2 class="sec-h"><span class="sec-idx">▲</span>${g}</h2><div class="home-grid">`;
+    for(const b of items){
+      h+=`<a class="act-card" href="${b.url}" target="_blank" rel="noopener" style="text-decoration:none;color:var(--ink)">
+        <small>chapter ${b.ch.n} · ${b.ch.t}</small>
+        <h3>${b.title}</h3>
+        <p>${b.desc}</p>
+        <span class="cnt">read the blog →</span></a>`;
+    }
+    h+='</div>';
+  }
+  m.innerHTML=h;
+  markActive('__blogs__');
+  window.scrollTo({top:0});
+}
+
+function renderHome(){
+  const m=$('#main');
+  m.innerHTML=`
+  <div class="hero">
+    <span class="hero-kicker">▲ 21 chapters · 5 live labs · 0 setup</span>
+    <h1>Learn PyTorch the way PyTorch learns: <span class="u">by backpropagating.</span></h1>
+    <p class="lead">Reading about gradients never made anyone good at them. Below is a <b>real computational graph</b> — drag the weights, call <b>backward()</b>, take an optimizer step. Everything on this page runs live in your browser, from broadcasting rules to a trainable neural network.</p>
+  </div>
+  <div id="heroTape"></div>
+  <div class="how-strip">
+    <div class="how"><b>read</b><h4>Opinionated theory</h4><p>Short, sharp chapters built around the gotchas that actually bite.</p></div>
+    <div class="how"><b>run</b><h4>Live labs</h4><p>Broadcasting, autograd, a trainable MLP, convolution, attention — all interactive.</p></div>
+    <div class="how"><b>prove it</b><h4>Checkpoints</h4><p>Every chapter ends with a quiz. Correct answers pay XP.</p></div>
+    <div class="how"><b>rank up</b><h4>Novice → Grandmaster</h4><p>Six ranks between you and Grandmaster of Gradients.</p></div>
+  </div>
+  <h2 class="home-h">The curriculum</h2>
+  <p class="home-sub">Four acts, in dependency order. Skipping ahead is allowed and encouraged — the sidebar never judges.</p>
+  <div class="home-grid">${GROUPS.map(g=>{
+    const chs=CH.filter(c=>c.g===g);
+    const blurb={
+      'Act I · Foundations':'Tensors, modules, autograd, the training loop, data. The 20% that powers everything.',
+      'Act II · Architectures':'CNNs, RNNs, transformers, and three ways to make networks dream.',
+      'Act III · Production':'Deployment, Lightning, distributed training, custom kernels, speed.',
+      'Act IV · Frontier':'RL, compression, meta-learning, NAS, uncertainty, and the open problems.'
+    }[g];
+    return `<button class="act-card" data-go="${chs[0].id}">
+      <small>${g}</small><h3>${chs[0].n}–${chs[chs.length-1].n}</h3>
+      <p>${blurb}</p>
+      <span class="cnt">${chs.map(c=>c.t).join(' · ')}</span></button>`;
+  }).join('')}</div>
+  <p class="session-note">▲ progress &amp; XP live in this session only — this playground keeps no data about you.</p>`;
+  mountTapeLab($('#heroTape'),{hero:true});
+  $$('.act-card',m).forEach(b=>b.addEventListener('click',()=>location.hash='#/ch/'+b.dataset.go));
+  markActive(null);
+}
+
+function sectionHTML(s,idx){
+  let h='';
+  if(s.h) h+=`<h2 class="sec-h"><span class="sec-idx">§${idx}</span>${s.h}</h2>`;
+  if(s.p) h+=`<div class="prose">${s.p}</div>`;
+  if(s.code) h+=codeCard(s.code, (s.h||'snippet').toLowerCase().replace(/[^a-z0-9]+/g,'_').slice(0,24)+'.py');
+  if(s.cap) h+=`<p class="code-cap">↳ ${s.cap}</p>`;
+  return h;
+}
+function renderChapter(id){
+  const c=CH.find(x=>x.id===id);
+  if(!c){renderHome();return;}
+  const i=CH.indexOf(c), prev=CH[i-1], next=CH[i+1];
+  const m=$('#main');
+  let secIdx=1;
+  let h=`
+  <div class="eyebrow">${c.g} · chapter ${c.n}</div>
+  <h1 class="ch-h">${c.t}</h1>
+  <p class="ch-sub">${c.sub}</p>
+  <div class="ch-meta"><span>⏱ <b>${c.read}</b> read</span><span>◆ <b>${c.widget?'1 live lab':'theory + code'}</b></span><span>✓ <b>${c.quiz.length} checkpoint Qs</b></span></div>`;
+  for(const s of c.body) h+=sectionHTML(s,secIdx++);
+  if(c.widget) h+=`<div id="labMount"></div>`;
+  for(const s of (c.after||[])) h+=sectionHTML(s,secIdx++);
+  // quiz
+  h+=`<div class="quiz"><div class="quiz-bar"><b>Checkpoint</b><span>+30 XP per correct</span></div>
+    ${c.quiz.map((q,qi)=>`<div class="qq" data-q="${qi}">
+      <div class="qq-q"><span class="qn">Q${qi+1}</span><span>${q.q}</span></div>
+      ${q.o.map((o,oi)=>`<label class="opt"><input type="radio" name="q${qi}" value="${oi}"><span>${o}</span></label>`).join('')}
+      <div class="qq-why">✓ ${q.why}</div>
+    </div>`).join('')}
+    <div class="quiz-foot"><button class="btn ember" id="gradeBtn">Grade my checkpoint</button><span class="quiz-score" id="quizScore"></span></div>
+  </div>
+  <div class="ch-foot">
+    <button class="btn complete-btn ${state.done.has(c.id)?'ghost':''}" id="doneBtn">${state.done.has(c.id)?'✓ chapter complete':'Mark chapter complete · +40 XP'}</button>
+    <div class="pager">
+      ${prev?`<button class="pg" data-go="${prev.id}"><small>← previous</small><b>${prev.n} · ${prev.t}</b></button>`:'<span style="flex:1"></span>'}
+      ${next?`<button class="pg next" data-go="${next.id}"><small>next →</small><b>${next.n} · ${next.t}</b></button>`:''}
+    </div>
+  </div>`;
+  m.innerHTML=h;
+  if(c.widget) WIDGETS[c.widget]($('#labMount'));
+  markActive(id);
+  window.scrollTo({top:0});
+
+  $('#gradeBtn').addEventListener('click',()=>{
+    let right=0,answeredAll=true;
+    c.quiz.forEach((q,qi)=>{
+      const sel=$(`input[name=q${qi}]:checked`,m);
+      const box=$(`.qq[data-q="${qi}"]`,m);
+      $$('.opt',box).forEach(o=>o.classList.remove('right','wrong'));
+      if(!sel){answeredAll=false;return;}
+      const oi=+sel.value;
+      const opts=$$('.opt',box);
+      opts[q.a].classList.add('right');
+      if(oi===q.a){right++;}
+      else opts[oi].classList.add('wrong');
+      $('.qq-why',box).classList.add('show');
+    });
+    const key=c.id+':quiz';
+    let msg=`${right}/${c.quiz.length} correct.`;
+    if(!answeredAll) msg+=' (answer everything for the full grade)';
+    if(right>0 && !state.answered.has(key)){
+      state.answered.add(key);
+      addXP(right*30);
+      msg+=` +${right*30} XP`;
+    } else if(state.answered.has(key)){
+      msg+=' — XP already banked for this checkpoint.';
+    }
+    $('#quizScore').textContent=msg;
+  });
+  $('#doneBtn').addEventListener('click',e=>{
+    if(state.done.has(c.id))return;
+    state.done.add(c.id); addXP(40);
+    e.target.textContent='✓ chapter complete'; e.target.classList.add('ghost');
+    renderSidebar(); markActive(id);
+  });
+  $$('.pg',m).forEach(b=>b.addEventListener('click',()=>location.hash='#/ch/'+b.dataset.go));
+}
+
+/* ---------- router ---------- */
+function route(){
+  const h=location.hash;
+  const mch=h.match(/^#\/ch\/([\w-]+)/);
+  if(/^#\/blogs/.test(h)) renderBlogs();
+  else if(mch) renderChapter(mch[1]);
+  else renderHome();
+}
+window.addEventListener('hashchange',route);
+$('#menuBtn').addEventListener('click',()=>$('#sidebar').classList.toggle('open'));
+document.addEventListener('click',e=>{
+  if(innerWidth<=980 && !e.target.closest('.sidebar') && !e.target.closest('.menu-btn'))
+    $('#sidebar').classList.remove('open');
+});
+
+renderSidebar();
+renderXP();
+route();
+</script>
+</body>
+</html>
