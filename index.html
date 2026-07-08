@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PyTorch Playground — learn. loss. repeat.</title>
+<title>PyTorch Playground — learn. backpropagate. repeat.</title>
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -288,7 +288,7 @@ h2.home-h{font-family:var(--disp);font-weight:600;font-size:22px;margin:40px 0 4
 <header class="topbar">
   <button class="menu-btn" id="menuBtn" aria-label="Toggle curriculum">☰</button>
   <a class="wordmark" href="#/" aria-label="PyTorch Playground home">
-    <b>PyTorch<em>▲</em>Playground</b><span>learn. <i>loss.</i> repeat.</span>
+    <b>PyTorch<em>▲</em>Playground</b><span>learn. <i>backpropagate.</i> repeat.</span>
   </a>
   <div class="top-right">
     <div class="xp-wrap" title="XP earned this session">
@@ -306,7 +306,7 @@ h2.home-h{font-family:var(--disp);font-weight:600;font-size:22px;margin:40px 0 4
 
 <script>
 /* =====================================================
-   PyTorch Playground — learn. loss. repeat.
+   PyTorch Playground — learn. backpropagate. repeat.
    A single-file interactive curriculum. All labs run
    real math (backprop included) in your browser.
    ===================================================== */
@@ -2548,9 +2548,19 @@ function renderHome(){
       <p>${blurb}</p>
       <span class="cnt">${chs.map(c=>c.t).join(' · ')}</span></button>`;
   }).join('')}</div>
+  <h2 class="home-h">The reading list</h2>
+  <p class="home-sub">Theory here is opinionated and short. When you want to go deeper, every chapter points to one outstanding blog or guide from the wider community — gathered into a single tab.</p>
+  <button class="pg" id="blogPromo" style="width:100%;display:flex;align-items:center;gap:16px;margin-top:10px">
+    <span style="font-size:24px;line-height:1">▤</span>
+    <span style="flex:1;min-width:0">
+      <small>reading list · ${collectBlogs().length} hand-picked blogs</small>
+      <b>Browse the reading list →</b>
+    </span>
+  </button>
   <p class="session-note">▲ progress &amp; XP live in this session only — this playground keeps no data about you.</p>`;
   mountTapeLab($('#heroTape'),{hero:true});
   $$('.act-card',m).forEach(b=>b.addEventListener('click',()=>location.hash='#/ch/'+b.dataset.go));
+  $('#blogPromo',m).addEventListener('click',()=>location.hash='#/blogs');
   markActive(null);
 }
 

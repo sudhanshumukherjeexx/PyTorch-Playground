@@ -1,6 +1,6 @@
 # PyTorch Playground ▲
 
-### *learn. loss. repeat.*
+### *learn. backpropagate. repeat.*
 
 An interactive, single-file PyTorch curriculum you run in your browser. No installs, no notebooks, no setup — open one HTML file and start learning PyTorch the way PyTorch learns: **by backpropagating.**
 
