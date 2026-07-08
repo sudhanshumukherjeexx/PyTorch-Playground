@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PyTorch Playground — a grad school</title>
+<title>PyTorch Playground — learn. loss. repeat.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -59,7 +59,9 @@ a{color:var(--blue)}
 .wordmark{display:flex;align-items:baseline;gap:9px;text-decoration:none;color:var(--ink)}
 .wordmark b{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.02em}
 .wordmark b em{font-style:normal;color:var(--ember)}
-.wordmark span{font-family:var(--mono);font-size:11px;color:var(--ink-soft);letter-spacing:.04em}
+.wordmark span{font-family:var(--mono);font-size:10.5px;font-weight:500;color:var(--ink-faint);letter-spacing:.18em;text-transform:uppercase}
+.wordmark span i{font-style:normal;font-weight:600;color:var(--ember)}
+@media(max-width:520px){.wordmark span{display:none}}
 .menu-btn{display:none;border:1.5px solid var(--ink);background:var(--card);border-radius:8px;width:36px;height:36px;font-size:16px;line-height:1}
 .top-right{margin-left:auto;display:flex;align-items:center;gap:14px}
 .xp-wrap{display:flex;align-items:center;gap:10px}
@@ -285,7 +287,7 @@ h2.home-h{font-family:var(--disp);font-weight:600;font-size:22px;margin:40px 0 4
 <header class="topbar">
   <button class="menu-btn" id="menuBtn" aria-label="Toggle curriculum">☰</button>
   <a class="wordmark" href="#/" aria-label="PyTorch Playground home">
-    <b>PyTorch<em>▲</em>Playground</b><span>a grad school</span>
+    <b>PyTorch<em>▲</em>Playground</b><span>learn. <i>loss.</i> repeat.</span>
   </a>
   <div class="top-right">
     <div class="xp-wrap" title="XP earned this session">
@@ -303,7 +305,7 @@ h2.home-h{font-family:var(--disp);font-weight:600;font-size:22px;margin:40px 0 4
 
 <script>
 /* =====================================================
-   PyTorch Playground — a grad school
+   PyTorch Playground — learn. loss. repeat.
    A single-file interactive curriculum. All labs run
    real math (backprop included) in your browser.
    ===================================================== */
